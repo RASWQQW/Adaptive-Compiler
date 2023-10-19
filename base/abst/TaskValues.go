@@ -42,9 +42,19 @@ func (ctx *BaseConnection) Reader(get_all bool, selCols []string, table string, 
 		}
 		selCols = column_names
 	}
-
-	var getArrayer string = strings.Join(selCols, "::text, ")
-	req, _ := ctx.dbOb.Query(`SELECT array[$1] as values FROM $2 $3`, getArrayer, table, addString)
+	for v, _ := range selCols {
+		selCols[v] = selCols[v] + "::text"
+	}
+	var getArrayer string = strings.Join(selCols, ", ")
+	fmt.Println("Reader params:", getArrayer, table, addString)
+	// var queryString = `SELECT array[$1] as values FROM $2`
+	// if len(getArrayer) > 0 {
+	// 	queryString = queryString + addString
+	// }
+	req, reqerr := ctx.dbOb.Query(fmt.Sprintf(`SELECT array[$1] as values FROM "%s" %s;`, table, addString), []interface{}{getArrayer}...)
+	if reqerr != nil {
+		panic(reqerr)
+	}
 	for req.Next() {
 		var GetArray []string
 		req.Scan(pq.Array(&GetArray))
@@ -117,7 +127,7 @@ func (ctx *BaseConnection) GetTaskByName(task_name_id string) (int, string, stri
 			res.Scan(&retid, &taskType)
 			// fmt.Println("Current id in for scan: ", retid)
 		}
-		var taskTypeVal = ctx.Reader(false, []string{"type_name"}, "TaskType", "")
+		var taskTypeVal = ctx.Reader(false, []string{"type_name"}, "TaskTypes", "")
 		return retid, taskTypeVal[0]["type_name"], task_name_id
 	}
 }
