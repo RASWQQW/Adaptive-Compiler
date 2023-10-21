@@ -22,8 +22,12 @@ func main() {
 	// base.Connecting()
 	// var args map[interface{}]string = ReadJson()
 	// RunCode(string(args["code"]), string(args["task_name_id"]))
-	var userCode = "int AddTwoNumbers(int a, int b){return a + b;}"
-	RunCode("cpp", userCode, "AddTwoNumbers")
+	// var userCode = "int AddTwoNumbers(int a, int b){return a + b;}"
+	// RunCode("cpp", userCode, "AddTwoNumbers")
+
+	var compVal = inputing.SetVals("apple", "apple2")
+	// fmt.Printf(inputing.container)
+	fmt.Printf(compVal.GetVal("code"))
 }
 
 func RunCode(lang string, code string, topic string) {
