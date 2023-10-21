@@ -1,0 +1,1 @@
+print("Apple came from heaven")
