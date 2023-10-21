@@ -1,0 +1,45 @@
+is_global = true
+build_property.TargetFramework = net6.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = TaskChecker
+build_property.RootNamespace = TaskChecker
+build_property.ProjectDir = C:\Users\rasul\source\repos\TaskChecker\TaskChecker\
+build_property.RazorLangVersion = 6.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = C:\Users\rasul\source\repos\TaskChecker\TaskChecker
+build_property._RazorSourceGeneratorDebug = 
+
+[C:/Users/rasul/source/repos/TaskChecker/TaskChecker/Pages/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/rasul/source/repos/TaskChecker/TaskChecker/Views/Home/AddTopic.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxBZGRUb3BpYy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/rasul/source/repos/TaskChecker/TaskChecker/Views/Home/CreateTopic.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxDcmVhdGVUb3BpYy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/rasul/source/repos/TaskChecker/TaskChecker/Views/Home/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/rasul/source/repos/TaskChecker/TaskChecker/Views/Home/Sender.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxTZW5kZXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/rasul/source/repos/TaskChecker/TaskChecker/Views/Reflex/MakeInsert.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVmbGV4XE1ha2VJbnNlcnQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/rasul/source/repos/TaskChecker/TaskChecker/Views/Request/Checker.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVxdWVzdFxDaGVja2VyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 

@@ -1,0 +1,30 @@
+﻿@using System.Reflection;
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+@model Tuple<PropertyInfo[], object>
+
+@{
+
+    var vals = new Dictionary<string, string> { { "String", "text" }, {"Int32", "digit" } };
+}
+
+
+<h1>This is insert by reflexes</h1>
+<form asp-controller="Reflex" asp-action="InsertObject" method="post">
+@{
+    <input name="ClassName" type="text" value="@Model.Item2.GetType().FullName" readonly="readonly">
+    foreach(PropertyInfo info in Model.Item1)
+    {
+        if (info.Name.ToLower() != "id")
+        {
+            <h1>@info.Name : </h1>
+            <input name="@info.Name" type="@vals[info.PropertyType.Name]"
+            value="@info.GetValue(Model.Item2)">
+        } 
+    }
+}
+<button type="submit">Insert</button>
+</form>

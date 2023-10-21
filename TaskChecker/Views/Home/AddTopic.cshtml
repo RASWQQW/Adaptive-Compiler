@@ -1,0 +1,32 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@using TaskChecker.Models.Views;
+@model TaskCreator;
+
+
+<form asp-action="AddTopic" asp-controller="Home" method="post">
+    @*<input type="text" placeholder="Write your wished text" name="DSCR">*@
+    <select name="Taker" asp-items="@Model.task_id">
+        <option value="">Pick one</option>
+    </select>
+
+    <h1>Type your code</h1>
+    @Html.TextBoxFor(x=> x.Code, Model.Code);
+
+@*    Here I need to write there have to show its method name if task_id is picked
+    and stays before changing it by custom*@
+    @*Exactly on gotten task_id there should same method name past*@
+    <h1> Method name</h1>
+    @Html.TextBoxFor(x=> x.MethodName, Model.MethodName)
+
+    <h1> Return Type</h1>
+    @Html.TextBoxFor(x=> x.returnType, Model.returnType)
+
+    @*And after getting all related values need to generate respective code template*@
+
+    <button type="submit">Submit</button>
+</form>

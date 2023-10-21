@@ -1,0 +1,3 @@
+{
+  "BaseValue": "Server=localhost; Database=Compiler; Port=5432; User id=postgres; Password=1212"
+}

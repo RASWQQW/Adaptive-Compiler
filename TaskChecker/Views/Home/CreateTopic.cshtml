@@ -1,0 +1,14 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<form asp-action="CreateTopic" asp-controller="Home" method="post">
+    <input type="text" placeholder="Write your wished text" name="task_name_id">
+    <input type="text" placeholder="Write your wished text" name="DSCR">
+    <button type="submit">Submit</button>
+</form>
