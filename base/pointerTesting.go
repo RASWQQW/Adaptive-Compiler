@@ -4,6 +4,11 @@ import (
 	"fmt"
 )
 
+func main() {
+
+	Testing()
+}
+
 func Testing() {
 	var isstring string = "Testing value"
 	var cup *string = &isstring
@@ -16,5 +21,5 @@ func Testing() {
 	var strval2 string = "Apples arent too good"
 	cup = &strval2
 
-	fmt.Println("NextVal2", strval2, cup, *cup)
+	fmt.Println("NextVal2", strval2, cup, &strval2, cup == &strval2, *cup)
 }

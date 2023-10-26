@@ -5,8 +5,10 @@ import (
 	// connecting "example/base"
 
 	"encoding/json"
+	inputing "example/Execs"
 	baseCalls "example/base/abst"
-	"example/inputing"
+
+	// obj "example/inputing/obj"
 	"fmt"
 	util "io/ioutil"
 	"os"
@@ -22,12 +24,22 @@ func main() {
 	// base.Connecting()
 	// var args map[interface{}]string = ReadJson()
 	// RunCode(string(args["code"]), string(args["task_name_id"]))
-	// var userCode = "int AddTwoNumbers(int a, int b){return a + b;}"
+	// var userCode = "double AddTwoNumbers(int a, int b){return a + b;}"
 	// RunCode("cpp", userCode, "AddTwoNumbers")
 
-	var compVal = inputing.SetVals("apple", "apple2")
-	// fmt.Printf(inputing.container)
-	fmt.Printf(compVal.GetVal("code"))
+	// var bf = `  int    AddTwoBB(int a,   int s)  {
+	// 	int apple = 12  ;
+	// 	int dos = 13  ;}  `
+	// one, two := obj.Aligner(bf)
+	// fmt.Println(
+	// 	"Before: ", bf,
+	// 	"After: ", one, two)
+	// TestingSlice()
+
+	// SaveFileTest()
+	// fmt.Println(cpp.Runner(""))
+
+	Runner()
 }
 
 func RunCode(lang string, code string, topic string) {

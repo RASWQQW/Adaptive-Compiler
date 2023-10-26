@@ -1,14 +1,15 @@
-#include <iostream>
 using namespace std;
+#include <iostream>
 
 
+
+double AddTwoNumbers(int a, int b){
+	return a + b;
+	}
 int main(){
-    cout << "Apple is tasty but is not to much";
-    int apple[] = {1, 2, 3, 4, };
-    int a;
-    cin >> a; 
+	int a = 207;
+int b = 338;
+ 
 
-    int appled, aff = 12;
-
-    return 0;
+ cout << AddTwoNumbers(a=a, b=b);
 }

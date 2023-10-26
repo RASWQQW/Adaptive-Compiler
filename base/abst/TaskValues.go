@@ -27,7 +27,7 @@ func (ctod *BaseConnection) Fof() {}
 // IT GOES FOR ALL REQUESTS WHICH IS QUITE SIMPLE BY GETTING OBVIOUS VALUES
 func (ctx *BaseConnection) Reader(get_all bool, selCols []string, table string, addString string) (ret_vals []map[string]string) {
 
-	if get_all == true {
+	if get_all {
 		var query string = `SELECT * FROM $1 $2`
 		var query2 string = `SELECT column_name from information_schema.columns where table_name = '$1'`
 		req, _ := ctx.dbOb.Query(query, addString)
@@ -47,23 +47,23 @@ func (ctx *BaseConnection) Reader(get_all bool, selCols []string, table string, 
 	}
 	var getArrayer string = strings.Join(selCols, ", ")
 	fmt.Println("Reader params:", getArrayer, table, addString)
-	// var queryString = `SELECT array[$1] as values FROM $2`
-	// if len(getArrayer) > 0 {
-	// 	queryString = queryString + addString
-	// }
-	req, reqerr := ctx.dbOb.Query(fmt.Sprintf(`SELECT array[$1] as values FROM "%s" %s;`, table, addString), []interface{}{getArrayer}...)
+	req, reqerr := ctx.dbOb.Query(fmt.Sprintf(`SELECT array[%s] as values FROM "%s" %s;`, getArrayer, table, addString)) // []interface{}{getArrayer}...
 	if reqerr != nil {
 		panic(reqerr)
 	}
 	for req.Next() {
 		var GetArray []string
 		req.Scan(pq.Array(&GetArray))
+		fmt.Println(GetArray)
 		Mapper := map[string]string{}
 		for in, _ := range selCols {
-			Mapper[selCols[in]] = GetArray[in]
+			Mapper[selCols[in][:len(selCols[in])-6]] = GetArray[in]
 		}
+
+		fmt.Println("Add val:", Mapper)
 		ret_vals = append(ret_vals, Mapper)
 	}
+	fmt.Println("Last result:", ret_vals)
 	return
 }
 
@@ -78,20 +78,22 @@ func (ctx *BaseConnection) GetFunction(task_id int) []string {
 }
 
 func (ctx *BaseConnection) GetFuncParams(task_id int) [][]string {
-	vals, _ := ctx.dbOb.Query(`SELECT id, args_name, args_types FROM "FunctionArgs" WHERE task_id = $1 LIMIT 1`, task_id)
+	vals, _ := ctx.dbOb.Query(`SELECT id, args_names, args_types FROM "FunctionArgs" WHERE task_id = $1 LIMIT 1`, task_id)
 
 	var args [][]string
-	if vals != nil {
-		var args_id int
-		var arg_names []string
-		var args_types []string
+	var args_id int
+	var arg_names []string
+	var args_types []string
 
-		vals.Next()
-		vals.Scan(&args_id, &arg_names, &args_types)
+	vals.Next()
+	vals.Scan(&args_id, pq.Array(&arg_names), pq.Array(&args_types))
 
+	if len(arg_names) == len(args_types) {
 		for iter, val := range arg_names {
-			args = append(args, []string{val, args_types[iter]})
+			args = append(args, []string{args_types[iter], val})
 		}
+	} else {
+		panic("Length of arg names and types doesn't match")
 	}
 	return args
 }
@@ -127,7 +129,7 @@ func (ctx *BaseConnection) GetTaskByName(task_name_id string) (int, string, stri
 			res.Scan(&retid, &taskType)
 			// fmt.Println("Current id in for scan: ", retid)
 		}
-		var taskTypeVal = ctx.Reader(false, []string{"type_name"}, "TaskTypes", "")
+		var taskTypeVal = ctx.Reader(false, []string{"type_name"}, "TaskTypes", string(fmt.Sprintf("WHERE id = %d", taskType)))
 		return retid, taskTypeVal[0]["type_name"], task_name_id
 	}
 }

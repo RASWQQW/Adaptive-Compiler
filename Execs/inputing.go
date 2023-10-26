@@ -1,8 +1,8 @@
 package inputing
 
 import (
-	cppComp "example/inputing/CppPr"
-	obj "example/inputing/obj"
+	cppComp "example/Execs/CppPr"
+	obj "example/Execs/obj"
 	"os"
 	"strings"
 )
@@ -26,19 +26,19 @@ type CompilerRunner interface {
 	csharpCompiler() string
 }
 
-func cppCompiler(cont obj.Container) string {
-	return cppComp.Compiler(cmp)
+func cppCompiler(cont *obj.Container) string {
+	return cppComp.Compiler(cont)
 }
 
-func javaCompiler(cont obj.Container) string {
+func javaCompiler(cont *obj.Container) string {
 	return ""
 }
 
-func pythonCompiler(cont obj.Container) string {
+func pythonCompiler(cont *obj.Container) string {
 	return ""
 }
 
-func csharpCompiler(cont obj.Container) string {
+func csharpCompiler(cont *obj.Container) string {
 	return ""
 }
 
@@ -47,13 +47,13 @@ func Main(lang string, code string, topic string) string {
 	// var Mainer Compiller = Compiller{"Find out that is the most characterized", topic, code}
 	var cont = obj.SetVals(code, topic)
 	if lang == "cpp" {
-		return cont.compiler.cppCompiler()
+		return cppCompiler(cont)
 	} else if lang == "java" {
-		return cont.compiler.javaCompiler()
+		return javaCompiler(cont)
 	} else if lang == "csharp" {
-		return cont.compiler.csharpCompiler()
+		return csharpCompiler(cont)
 	} else if lang == "python" {
-		return cont.compiler.pythonCompiler()
+		return pythonCompiler(cont)
 	}
 	panic("Here is no thing that can be called")
 }
