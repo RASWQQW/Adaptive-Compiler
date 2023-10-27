@@ -13,7 +13,7 @@ func main() {
 	fmt.Println("Compliation start")
 }
 
-func Runner(currentGivenPath string) []string {
+func Runner(currentGivenPath string, returns chan []string) []string {
 	var currentPath string = ""
 	if len(currentGivenPath) >= 1 {
 		currentPath = currentGivenPath
@@ -34,7 +34,9 @@ func Runner(currentGivenPath string) []string {
 
 	// fmt.Printf("Output of: %s", strings.Trim(string(outpp[:]), " "))
 	// fmt.Println("Result at end:", stdread.String(), errs.String())
+	returns <- []string{stdread.String(), errs.String()}
 	return []string{stdread.String(), errs.String()}
+
 }
 
 func GetAllInnerValues(checkPath string) string {

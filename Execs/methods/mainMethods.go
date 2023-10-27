@@ -66,12 +66,12 @@ func Replacer(forrep []string, value string) string {
 	return value
 }
 
-func TypeGuesser(text string) any {
+func TypeGuesser(incrLevel int, text string) any {
 	var retval interface{}
 	if text == "int" {
-		retval = rand.Intn(355)
+		retval = rand.Intn(ValIncr("default", incrLevel))
 	} else if text == "double" {
-		retval = rand.Float64()
+		retval = rand.Float64() + (ValIncr("default", incrLevel) * 1.00)
 	}
 	return retval
 }
@@ -107,18 +107,14 @@ func getRandom(TypeString string) string {
 	return fmt.Sprintf("%s, ", TypeGuesser(TypeString))
 }
 
-func RandValSetting(paramtype string, paramlen string, istype string) string {
+func RandValSetting(incrLevel int, paramtype string, paramlen string, istype string) string {
 	var IntLen int = 0
 	var RandVal string = "{"
 	if len(paramlen) > 0 {
 		IntLen, _ = strconv.Atoi(paramlen)
 	} else {
 		var toint int = 15
-		if istype == "matrix" {
-			toint = 8
-		} else if istype == "list" {
-			toint = 15
-		}
+		toint = ValIncr(istype, incrLevel)
 		IntLen = rand.Intn(toint)
 	}
 	for i := 0; i < IntLen; i++ {

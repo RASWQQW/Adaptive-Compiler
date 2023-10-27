@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"os/exec"
-	"sync"
 	"time"
 )
 
@@ -22,6 +21,7 @@ func Running(res chan string) {
 
 func Checker1(vow chan string) {
 	for {
+		time.Sleep(time.Second * 1)
 		vow <- "text1"
 		vow <- "text2"
 		// time.Sleep(time.Second)
@@ -33,29 +33,39 @@ func Checker1(vow chan string) {
 	}
 }
 func Checker2(dd chan string) {
-	for {
+	for val := <-dd; val != ""; {
 		time.Sleep(time.Second * 2)
-		for v := range dd {
-			fmt.Println(v)
-		}
+		// for v := range dd {
+		// 	fmt.Println(v)
+		// }
+
+		fmt.Println(val)
+		fmt.Println(val)
+		fmt.Println(<-dd)
+		fmt.Println("End Step")
 	}
 }
 
 func Runner() {
 	resnew := make(chan string, 2)
-	fmt.Println(<-resnew)
+	// fmt.Println(<-resnew)
 	// resnew <- "Result is empty"
 	// resnew := make(chan string)
 	// go Running(resnew)
-	var syncer sync.WaitGroup
-	syncer.Add(1)
-	go func() {
-		go Checker1(resnew)
-		go Checker2(resnew)
-		syncer.Done()
-	}()
+	// var syncer sync.WaitGroup
+	// syncer.Add(1)
+
+	go Checker1(resnew)
+	go Checker2(resnew)
+
+	time.Sleep(time.Second * 50)
+
+	// go func() {
+	// 	go Checker2(resnew)
+	// 	syncer.Done()
+	// }()
 
 	// time.Sleep(time.Second * 2)
 	// fmt.Println(<-resnew)
-	syncer.Wait()
+	// syncer.Wait()
 }

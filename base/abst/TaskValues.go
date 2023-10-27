@@ -77,7 +77,7 @@ func (ctx *BaseConnection) GetFunction(task_id int) []string {
 	return []string{returnType, funcName}
 }
 
-func (ctx *BaseConnection) GetFuncParams(task_id int) [][]string {
+func (ctx *BaseConnection) GetFuncParams(task_id int, values chan []string) {
 	vals, _ := ctx.dbOb.Query(`SELECT id, args_names, args_types FROM "FunctionArgs" WHERE task_id = $1 LIMIT 1`, task_id)
 
 	var args [][]string
@@ -95,7 +95,7 @@ func (ctx *BaseConnection) GetFuncParams(task_id int) [][]string {
 	} else {
 		panic("Length of arg names and types doesn't match")
 	}
-	return args
+	values <- args
 }
 
 func (ctx *BaseConnection) GetProperCode(task_id int, lang string) string {
