@@ -45,7 +45,7 @@ func csharpCompiler(cont *obj.Container) string {
 // here goes little runner like main Func
 func Main(lang string, code string, topic string) string {
 	// var Mainer Compiller = Compiller{"Find out that is the most characterized", topic, code}
-	var cont = obj.SetVals(code, topic)
+	var cont = obj.SetValsOfContainer(code, topic)
 	if lang == "cpp" {
 		return cppCompiler(cont)
 	} else if lang == "java" {

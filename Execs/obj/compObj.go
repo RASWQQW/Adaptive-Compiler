@@ -14,10 +14,15 @@ type Container struct {
 	Compiler Compillers
 }
 
+type BaseValCar struct {
+	Vals  []map[string]interface{}
+	Chans []map[string]chan []string
+}
+
 var container *Container = nil
 
 // Its main fucntion because it gets FIRST struct to use further
-func SetVals(code string, topic string) *Container {
+func SetValsOfContainer(code string, topic string) *Container {
 	container = &Container{Compiler: Compillers{code, topic}}
 	return container
 }

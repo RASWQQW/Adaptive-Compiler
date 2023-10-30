@@ -77,7 +77,7 @@ func (ctx *BaseConnection) GetFunction(task_id int) []string {
 	return []string{returnType, funcName}
 }
 
-func (ctx *BaseConnection) GetFuncParams(task_id int, values chan []string) {
+func (ctx *BaseConnection) GetFuncParams(task_id int, values chan [][]string) {
 	vals, _ := ctx.dbOb.Query(`SELECT id, args_names, args_types FROM "FunctionArgs" WHERE task_id = $1 LIMIT 1`, task_id)
 
 	var args [][]string
@@ -116,7 +116,19 @@ func (ctx *BaseConnection) GetProperCode(task_id int, lang string) string {
 	return Values[0][1] // mere simple to get one proper code val return
 }
 
-func (ctx *BaseConnection) GetTaskByName(task_name_id string) (int, string, string) {
+func (ctx *BaseConnection) GetTaskByName(vals map[string]interface{}, chans map[string]chan []string) { //(int, string, string)
+	// task_name_id string
+	var task_name_id string = fmt.Sprintf("%s", vals["task_name_id"])
+	// var task_name_id string
+
+	// var valp []*string = []*string{&task_name_id}
+
+	// There you can use referencing by & to set values
+	// var valsd []interface{} = append([]interface{}{}, vals...)
+	// if typeN := reflect.ValueOf(valsd[0]); typeN.Kind() == reflect.String {
+	// 	var task_name_id string = typeN.String()
+	// }
+
 	fmt.Println("checking: ", ctx.dbOb.Ping(), task_name_id)
 	res, err := ctx.dbOb.Query(`SELECT "id", "tasktype" FROM "Tasks" WHERE "Tasks".task_name_id = $1 LIMIT 1`, task_name_id)
 
@@ -129,8 +141,11 @@ func (ctx *BaseConnection) GetTaskByName(task_name_id string) (int, string, stri
 			res.Scan(&retid, &taskType)
 			// fmt.Println("Current id in for scan: ", retid)
 		}
-		var taskTypeVal = ctx.Reader(false, []string{"type_name"}, "TaskTypes", string(fmt.Sprintf("WHERE id = %d", taskType)))
-		return retid, taskTypeVal[0]["type_name"], task_name_id
+
+		chans["taskType"] <- []string{fmt.Sprintf("%d", taskType)}
+		chans["GetTaskId"] <- []string{fmt.Sprintf("%d", retid)}
+		// var taskTypeVal = ctx.Reader(false, []string{"type_name"}, "TaskTypes", string(fmt.Sprintf("WHERE id = %d", taskType)))
+		// return retid, taskTypeVal[0]["type_name"], task_name_id
 	}
 }
 

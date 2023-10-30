@@ -39,7 +39,29 @@ func main() {
 	// SaveFileTest()
 	// fmt.Println(cpp.Runner(""))
 
-	Runner()
+	// Runner()
+
+	// vdss := make(chan string, 1)
+	// vdss <- "CCD"
+	// fmt.Println("Bottom val")
+	// var dds chan string = vdss
+	// var dds2 chan string = vdss
+
+	// kk := <-dds
+	// fmt.Println(dds, dds2, kk)
+
+	// // fmt.Println(vdss, <-vdss)
+	// var dd *string = &kk
+	// fmt.Println(dd, *dd)
+	// *dd = "Oppa"
+	// fmt.Println(dd, *dd, kk)
+	// fmt.Println(<-dds2)
+
+	BaseChecker()
+
+	// var pointerCheck []string = []string{"Apple"}
+	// Turner(pointerCheck)
+	// fmt.Println(pointerCheck[0])
 }
 
 func RunCode(lang string, code string, topic string) {

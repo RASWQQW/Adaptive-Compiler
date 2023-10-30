@@ -1,6 +1,7 @@
 package inputing
 
 import (
+	"example/Execs/methods"
 	mt "example/Execs/methods"
 	obj "example/Execs/obj"
 	bs "example/base/abst"
@@ -125,12 +126,14 @@ func codeSaving(LoCode string, ProperBaseCode string, staticHeader string, callM
 	// its a code from user
 	var ppcodeUser string = path + "\\UserCode"
 	SaveCode(ppcodeUser+"\\compiler.cpp", staticHeader+"\n"+LoCode+"\n"+callMain)
-	var userCompRes []string = cpp.Runner(ppcodeUser)
+	vdd := make(chan []string)
+	var userCompRes []string = cpp.Runner(ppcodeUser, vdd)
 
 	// its a proper one
 	var ppcodeProper string = path + "\\ProperCode"
 	SaveCode(ppcodeProper+"\\compiler.cpp", staticHeader+"\n"+ProperBaseCode+"\n"+callMain)
-	var properCompRes []string = cpp.Runner(ppcodeProper)
+	vvd := make(chan []string)
+	var properCompRes []string = cpp.Runner(ppcodeProper, vvd)
 
 	fmt.Println("Checking Step: ", chStep)
 	if len(userCompRes[1]) > 0 || len(properCompRes[1]) > 0 {
@@ -154,7 +157,8 @@ func CompilingResult(
 	CurrentFuncName string,
 	StaticStartCode string,
 	taskType string,
-	MainParamPassing [][]string) string {
+	MainParamPassing [][]string,
+	ParamCheckingTime int) string {
 
 	// there have to check that value is
 	// PRINT type or I/O type
@@ -187,9 +191,7 @@ func CompilingResult(
 		//var TypesKeys map[string]interface{} = map[string]interface{}{"dict[int]": map[int]string, "list[float]": []interface{}, "list[int]": []int, "int": int, "double": ""}
 		//DEF CONST VALS AND mt TO SAVE
 
-		var ParamCheckingTime int = mt.StepGiving(LoCode)
 		fmt.Println("Code checking time: ", string(ParamCheckingTime))
-
 		for t := 0; t < ParamCheckingTime; t++ {
 			// two of them fils ahead all of and gets place when they are ready
 			var DataTypes string = ""
@@ -209,7 +211,7 @@ func CompilingResult(
 						// there starts whole process of checking that type and giving value
 						var glen string = mt.GetLen(ListComped)[0]
 						var gtypename string = mt.GetParamType(ListComped)
-						RandVal = mt.GetFullType(name, gtypename, []string{glen}) + mt.RandValSetting(gtypename, glen, "list") + ";"
+						RandVal = mt.GetFullType(name, gtypename, []string{glen}) + mt.RandValSetting(t, gtypename, glen, "list") + ";"
 
 					} else if len(matrixComped) > 0 {
 						var glen []string = mt.GetLen(matrixComped)
@@ -217,13 +219,13 @@ func CompilingResult(
 						var FullType, valsStringsformat string
 						FullType = mt.GetFullType(name, gtypename, glen)
 						for conts := range glen {
-							valsStringsformat = valsStringsformat + ", " + mt.RandValSetting(gtypename, glen[conts], "matrix")
+							valsStringsformat = valsStringsformat + ", " + mt.RandValSetting(t, gtypename, glen[conts], "matrix")
 						}
 						RandVal = FullType + "{" + valsStringsformat + "};"
 					}
 
 				} else {
-					RandVal = fmt.Sprintf("%s %s = %d;", ParamType, name, mt.TypeGuesser(string(ParamType)))
+					RandVal = fmt.Sprintf("%s %s = %d;", ParamType, name, mt.TypeGuesser(t, string(ParamType)))
 				}
 				// here goes adding all inner parameters to put in a row line
 				DataTypes = DataTypes + RandVal + "\n"
@@ -239,6 +241,7 @@ func CompilingResult(
 				return res
 			}
 		}
+
 		return "Your code is proper as well"
 	}
 	// and here have to be func creator which creates func code to save in file
@@ -265,43 +268,81 @@ func Compiler(cmp *obj.Container) string {
 	var LoCode, _ = mt.Aligner(cmp.GetVal("Code"))
 	var TopicName = cmp.GetVal("Topic")
 
-	GetTaskId, taskType, _ := gb.GetTaskByName(TopicName)
+	var GetTaskId = make(chan []string)
+	var taskType = make(chan []string)
+	var getFunc = make(chan []string)
+	var propCode = make(chan []string)
+	var prPassType = make(chan []string)
+	var prPassName = make(chan []string)
+
+	var funcs = []func(map[string]interface{}, map[string]chan []string){
+		gb.GetTaskByName}
+	//gb.GetFunction,
+	//gb.GetProperCode,
+	//gb.GetFuncParams
+
+	go gb.GetTaskByName(map[string]interface{}{"task_name_id": TopicName},
+		map[string]chan []string{"taskType": taskType, "GetTaskId": GetTaskId})
+
+	var TaskId = <-GetTaskId
+	var funcParams []map[string]interface{} = []map[string]interface{}{
+		{"TaskId": TaskId},
+		{"TaskId": TaskId, "LANG": LANG},
+		{"TaskId": TaskId}}
+
+	var funcChans = []map[string]chan []string{
+		{"getFunc": getFunc},
+		{"propCode": propCode},
+		{"prPassName": prPassName, "prPassType": prPassType}}
+
+	// running of routin runner
+	methods.RoutineRunner(funcs, obj.BaseValCar{Vals: funcParams, Chans: funcChans})
+
+	// GetTaskId, taskType, _ := gb.GetTaskByName(TopicName)
 	rep("Function name: ", TopicName)
 	rep("User Code: ", LoCode)
-	rep("Function id: ", GetTaskId)
-	rep("Func Type: ", taskType)
+	rep("Function id: ", TaskId)
+	rep("Func Type: ", <-taskType)
 
-	var getFunc = gb.GetFunction(GetTaskId)
-	var propCode = gb.GetProperCode(GetTaskId, LANG)
+	// var getFunc = gb.GetFunction(GetTaskId)
+	// var propCode = gb.GetProperCode(GetTaskId, LANG)
 
-	var CurrentFuncName string = getFunc[1]
-	rep("Func name: ", getFunc[1])
+	var gottenFunc []string = <-getFunc
 
-	var CurrentFuncReturnType string = getFunc[0]
-	rep("Func return: ", getFunc[0])
+	var CurrentFuncName string = gottenFunc[1]
+	rep("Func name: ", CurrentFuncName)
+
+	var CurrentFuncReturnType string = gottenFunc[0]
+	rep("Func return: ", CurrentFuncReturnType)
+
+	var prNames []string = <-prPassName
+	var prTypes []string = <-prPassType
+	var MainParamPassing [][]string = [][]string{}
+
+	if len(prNames) == len(prTypes) {
+		for v := range prNames {
+			MainParamPassing = append(MainParamPassing, []string{prNames[v], prTypes[v]})
+		}
+	}
+
+	var propCodeStr []string = <-propCode
+	var taskTypeStr []string = <-taskType
 
 	var ProperBaseCode string = strings.ReplaceAll(
-		strings.ReplaceAll(propCode, "FUNC", CurrentFuncName),
+		strings.ReplaceAll(propCodeStr[0], "FUNC", CurrentFuncName),
 		"RET_TYPE", CurrentFuncReturnType) //changes for all proper code funcs
 
 	rep("Proper code: ", ProperBaseCode)
+	var ParamCheckingTime int = mt.StepGiving(-1, MainParamPassing)
 
 	// There i have to ready current topic giving vals and current code
 	// and it happens once but rndomly saves it many time
 
-	// mainPassing params gets usally as int Apple2 and int Apple2
-	// And There could be matrix, mere integer or double or random list
-	var MainParamPassing [][]string = [][]string{{"int", "Setting"},
-		{"double", "Setting2"},
-		{"list", "JustMember"},
-		{"matrix", "JustMember2"},
-		{"dict", "JustMember3"}}
-
-	MainParamPassing = gb.GetFuncParams(GetTaskId)
+	// MainParamPassing = gb.GetFuncParams(GetTaskId)
 	var StaticStartCode string = "using namespace std;\n#include <iostream>\n\n\n"
 	if d := CodeMatching(LoCode, CurrentFuncName, CurrentFuncReturnType, MainParamPassing); d != "true" {
 		return d
 	}
-	return CompilingResult(LoCode, ProperBaseCode, CurrentFuncName, StaticStartCode, taskType, MainParamPassing)
+	return CompilingResult(LoCode, ProperBaseCode, CurrentFuncName, StaticStartCode, taskTypeStr[0], MainParamPassing, ParamCheckingTime)
 	// return "The last val of checking"
 }

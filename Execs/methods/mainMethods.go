@@ -71,7 +71,7 @@ func TypeGuesser(incrLevel int, text string) any {
 	if text == "int" {
 		retval = rand.Intn(ValIncr("default", incrLevel))
 	} else if text == "double" {
-		retval = rand.Float64() + (ValIncr("default", incrLevel) * 1.00)
+		retval = rand.Float64() + float64(ValIncr("default", incrLevel))
 	}
 	return retval
 }
@@ -103,8 +103,8 @@ func GetFullType(ValueName string, paramtype string, paramlen []string) string {
 	return paramtype + fmt.Sprintf(" %s%s", ValueName, params)
 }
 
-func getRandom(TypeString string) string {
-	return fmt.Sprintf("%s, ", TypeGuesser(TypeString))
+func getRandom(TypeString string, incrLevel int) string {
+	return fmt.Sprintf("%s, ", TypeGuesser(incrLevel, TypeString))
 }
 
 func RandValSetting(incrLevel int, paramtype string, paramlen string, istype string) string {
@@ -118,7 +118,7 @@ func RandValSetting(incrLevel int, paramtype string, paramlen string, istype str
 		IntLen = rand.Intn(toint)
 	}
 	for i := 0; i < IntLen; i++ {
-		RandVal = RandVal + getRandom(paramtype)
+		RandVal = RandVal + getRandom(paramtype, incrLevel)
 	}
 	return RandVal + "}"
 }

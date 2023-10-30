@@ -1,31 +1,39 @@
 package methods
 
 import (
+	"example/Execs/obj"
 	"example/base/abst"
 	"fmt"
 	"math/rand"
 	"os"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"time"
 )
 
 var envMainPath, _ = os.Getwd()
 
-func StepGiving(task_id int) int {
+func StepGiving(task_id int, MainParams [][]string) int {
 	// Step giving detemines whether func have to checked long or short
 
-	cnh := make(chan []string)
-	var mainFunc abst.BaseConnection = abst.GetBase()
-	mainFunc.GetFuncParams(task_id, cnh)
+	var getCodeParamTypes [][]string
+	if task_id >= 0 {
+		var mainFunc abst.BaseConnection = abst.GetBase()
+		cnh := make(chan [][]string)
+		mainFunc.GetFuncParams(task_id, cnh)
+		getCodeParamTypes = <-cnh
+	} else {
+		//There have to be func that extracts types from [][]object
+		getCodeParamTypes = MainParams
+	}
 
-	var getCodeParamTypes []string = <-cnh
 	var getCodeParamsAmount []string = []string{}
 	var regComp = regexp.MustCompile("(\\[\\d*\\])+")
 
 	var typeComplixity int = 0
 	for _, paramType := range getCodeParamTypes {
-		var counts []string = regComp.FindAllString(paramType, -1)
+		var counts []string = regComp.FindAllString(paramType[0], -1)
 		typeComplixity = typeComplixity + (len(counts) + 1)
 	}
 
@@ -54,12 +62,6 @@ func StepGiving(task_id int) int {
 	return time
 }
 
-func RoutineRunner(funcs ...func(vals ...any)) {
-	//There would be incr level
-	// to increase level of variable complixity on checking when passing
-
-}
-
 func ValIncr(cat string, val int) int {
 	// there have to by some logic
 	if cat == "default" {
@@ -76,7 +78,7 @@ func ExecTimeComp() int {
 	return 1
 }
 
-func ExecTimeLimier(path string, execer func(string, chan []string) []string) []string {
+func ExecTimeLimiter(path string, execer func(string, chan []string) []string) []string {
 	var getReturns = make(chan []string, 1)
 	getReturns <- []string{}
 	go execer(path, getReturns)
@@ -124,4 +126,33 @@ func FileCreateFunc(code string, CodeStatus string, lang string) string {
 
 func FileDeleteFunc(delFilePath string) {
 	os.Remove(envMainPath + delFilePath)
+}
+
+func AnySetter(ids []*interface{}, anys []interface{}) {
+	if len(ids) == len(anys) {
+		var valsd []interface{} = append([]interface{}{}, anys...)
+
+		for dd, _ := range valsd {
+			typeN := reflect.ValueOf(valsd[dd])
+			if typeN.Kind() == reflect.String {
+				*ids[dd] = typeN.String()
+			} else if typeN.Kind() == reflect.Chan {
+				if reflect.ValueOf(*ids[dd]).Kind() == reflect.Int {
+					*ids[dd] = typeN.Int()
+				}
+			}
+
+		}
+	}
+}
+
+func RoutineRunner(funcs []func(map[string]interface{}, map[string]chan []string), params obj.BaseValCar) {
+	if len(funcs) == len(params.Vals) && len(funcs) == len(params.Chans) {
+		for funcdd := range funcs {
+			go funcs[funcdd](params.Vals[funcdd], params.Chans[funcdd])
+		}
+	}
+
+	//There would be incr level
+	// to increase level of variable complixity on checking when passing
 }
