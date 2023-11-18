@@ -36,7 +36,6 @@ func Runner(currentGivenPath string, returns chan []string) []string {
 	// fmt.Println("Result at end:", stdread.String(), errs.String())
 	returns <- []string{stdread.String(), errs.String()}
 	return []string{stdread.String(), errs.String()}
-
 }
 
 func GetAllInnerValues(checkPath string) string {

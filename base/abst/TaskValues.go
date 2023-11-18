@@ -2,7 +2,9 @@ package abst
 
 import (
 	"database/sql"
-	BaseFunc "example/base"
+	"ep/Execs/obj"
+	lv "ep/LevelFuncs"
+	BaseFunc "ep/base"
 	"fmt"
 	"strings"
 
@@ -68,37 +70,63 @@ func (ctx *BaseConnection) Reader(get_all bool, selCols []string, table string, 
 }
 
 // HERE GOES BASE METHODS AND LOGICS TO CREATE SAVE AND GET TASKS
-func (ctx *BaseConnection) GetFunction(task_id int) []string {
+func (ctx *BaseConnection) GetFunction(worker *obj.Career) /*[]string*/ {
+	var task_id string = lv.ToString(worker.ValFinder("task_id", "out", -1))
+
 	funcVals, _ := ctx.dbOb.Query(`SELECT return_value, func_name FROM "Functions" WHERE task_id = $1`, task_id)
 	var returnType string
 	var funcName string
 	funcVals.Next()
 	funcVals.Scan(&returnType, &funcName)
-	return []string{returnType, funcName}
+
+	worker.OUTS["return_type"] = returnType
+	worker.INOUTS["func_name"] = funcName
+	//return []string{returnType, funcName}
 }
 
-func (ctx *BaseConnection) GetFuncParams(task_id int, values chan [][]string) {
+func (ctx *BaseConnection) GetFuncParams(valsl *obj.Career) { //values map[string]interface{}, Chans map[string]chan []string, Pointers map[string]interface{}
+	// var task_id string = lv.ToString(values["task_id"])
+
+	var task_id string = lv.ToString(valsl.ValFinder("task_id", "out", -1))
 	vals, _ := ctx.dbOb.Query(`SELECT id, args_names, args_types FROM "FunctionArgs" WHERE task_id = $1 LIMIT 1`, task_id)
 
 	var args [][]string
 	var args_id int
-	var arg_names []string
+	var args_names []string
 	var args_types []string
 
 	vals.Next()
-	vals.Scan(&args_id, pq.Array(&arg_names), pq.Array(&args_types))
+	vals.Scan(&args_id, pq.Array(&args_names), pq.Array(&args_types))
 
-	if len(arg_names) == len(args_types) {
-		for iter, val := range arg_names {
+	if len(args_names) == len(args_types) {
+		for iter, val := range args_names {
 			args = append(args, []string{args_types[iter], val})
 		}
 	} else {
 		panic("Length of arg names and types doesn't match")
 	}
-	values <- args
+	valsl.OUTS["arg_names"] = args_names
+	valsl.OUTS["arg_types"] = args_types
+	valsl.OUTS["args"] = args
+
+	// if len(Chans) > 0 {
+	// 	var keyLists = maps.Keys(Chans)
+	// 	if strings.Contains(strings.Join(keyLists, ","), "prNames") {
+	// 		Chans["prNames"] <- arg_names
+	// 	}
+	// 	if strings.Contains(strings.Join(keyLists, ","), "prTypes") {
+	// 		Chans["prTypes"] <- args_types
+	// 	}
+	// } else {
+	// 	Pointers["MainParams"] = args
+	// }
+
 }
 
-func (ctx *BaseConnection) GetProperCode(task_id int, lang string) string {
+func (ctx *BaseConnection) GetProperCode(worker *obj.Career) /*string*/ {
+	var task_id string = lv.ToString(worker.ValFinder("task_id", "out", -1))
+	var lang string = lv.ToString(worker.INOUTS["lang"])
+
 	req, _ := ctx.dbOb.Query(`SELECT id, code, lang FROM "ProperCode" WHERE task_id = $1 AND lang = $2 LIMIT 1;
 	`, task_id, lang)
 
@@ -113,12 +141,13 @@ func (ctx *BaseConnection) GetProperCode(task_id int, lang string) string {
 		}
 	}
 	// fmt.Println("Values: ", Values, "Len: ", len(Values), "Lang: ", lang, task_id)
-	return Values[0][1] // mere simple to get one proper code val return
+	worker.OUTS["prop_code"] = Values[0][1]
+	//return Values[0][1] // mere simple to get one proper code val return
 }
 
-func (ctx *BaseConnection) GetTaskByName(vals map[string]interface{}, chans map[string]chan []string) { //(int, string, string)
+func (ctx *BaseConnection) GetTaskByName(values *obj.Career) { //(int, string, string)
 	// task_name_id string
-	var task_name_id string = fmt.Sprintf("%s", vals["task_name_id"])
+	var task_name_id string = lv.ToString(values.INOUTS["task_name_id"])
 	// var task_name_id string
 
 	// var valp []*string = []*string{&task_name_id}
@@ -142,8 +171,8 @@ func (ctx *BaseConnection) GetTaskByName(vals map[string]interface{}, chans map[
 			// fmt.Println("Current id in for scan: ", retid)
 		}
 
-		chans["taskType"] <- []string{fmt.Sprintf("%d", taskType)}
-		chans["GetTaskId"] <- []string{fmt.Sprintf("%d", retid)}
+		values.OUTS["task_type"] = []string{fmt.Sprintf("%d", taskType)}
+		values.OUTS["task_id"] = []string{fmt.Sprintf("%d", retid)}
 		// var taskTypeVal = ctx.Reader(false, []string{"type_name"}, "TaskTypes", string(fmt.Sprintf("WHERE id = %d", taskType)))
 		// return retid, taskTypeVal[0]["type_name"], task_name_id
 	}

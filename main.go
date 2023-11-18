@@ -1,14 +1,14 @@
 package main
 
 import (
-	// comping "example/comps/jv/comping"
-	// connecting "example/base"
+	// comping "ep/comps/jv/comping"
+	// connecting "ep/base"
 
 	"encoding/json"
-	inputing "example/Execs"
-	baseCalls "example/base/abst"
+	inputing "ep/Execs"
+	baseCalls "ep/base/abst"
 
-	// obj "example/inputing/obj"
+	// obj "ep/inputing/obj"
 	"fmt"
 	util "io/ioutil"
 	"os"
@@ -57,11 +57,14 @@ func main() {
 	// fmt.Println(dd, *dd, kk)
 	// fmt.Println(<-dds2)
 
-	BaseChecker()
+	// Runner1()
 
 	// var pointerCheck []string = []string{"Apple"}
 	// Turner(pointerCheck)
 	// fmt.Println(pointerCheck[0])
+
+	// web.Runner()
+	Checking()
 }
 
 func RunCode(lang string, code string, topic string) {

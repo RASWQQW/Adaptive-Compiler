@@ -1,4 +1,4 @@
-module example
+module ep
 
 go 1.20
 

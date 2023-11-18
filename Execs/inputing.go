@@ -1,8 +1,8 @@
 package inputing
 
 import (
-	cppComp "example/Execs/CppPr"
-	obj "example/Execs/obj"
+	cppComp "ep/Execs/CppPr"
+	obj "ep/Execs/obj"
 	"os"
 	"strings"
 )

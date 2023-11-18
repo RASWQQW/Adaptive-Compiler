@@ -1,8 +1,7 @@
 package methods
 
 import (
-	"example/Execs/obj"
-	"example/base/abst"
+	"ep/Execs/obj"
 	"fmt"
 	"math/rand"
 	"os"
@@ -15,14 +14,14 @@ import (
 var envMainPath, _ = os.Getwd()
 
 func StepGiving(task_id int, MainParams [][]string) int {
-	// Step giving detemines whether func have to checked long or short
+	// Step giving determines whether func have to checked long or short
 
 	var getCodeParamTypes [][]string
 	if task_id >= 0 {
-		var mainFunc abst.BaseConnection = abst.GetBase()
-		cnh := make(chan [][]string)
-		mainFunc.GetFuncParams(task_id, cnh)
-		getCodeParamTypes = <-cnh
+		// var mainFunc abst.BaseConnection = abst.GetBase()
+		// cnh := make(chan []string)
+		// mainFunc.GetFuncParams(task_id, cnh)
+		// getCodeParamTypes = <-cnh
 	} else {
 		//There have to be func that extracts types from [][]object
 		getCodeParamTypes = MainParams
@@ -141,17 +140,16 @@ func AnySetter(ids []*interface{}, anys []interface{}) {
 					*ids[dd] = typeN.Int()
 				}
 			}
-
 		}
 	}
 }
 
-func RoutineRunner(funcs []func(map[string]interface{}, map[string]chan []string), params obj.BaseValCar) {
-	if len(funcs) == len(params.Vals) && len(funcs) == len(params.Chans) {
-		for funcdd := range funcs {
-			go funcs[funcdd](params.Vals[funcdd], params.Chans[funcdd])
-		}
+func RoutineRunner(funcs []func(*obj.Career), params *obj.Career) {
+	//if len(funcs) == len(funcs) len(funcs) == len(params) {
+	for funcdd, _ := range funcs {
+		go funcs[funcdd](params)
 	}
+	//}
 
 	//There would be incr level
 	// to increase level of variable complixity on checking when passing
