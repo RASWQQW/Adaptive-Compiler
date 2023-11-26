@@ -6,9 +6,13 @@ import (
 
 	"encoding/json"
 	inputing "ep/Execs"
+
+	// runCode "ep/LevelFuncs"
 	baseCalls "ep/base/abst"
 
 	// obj "ep/inputing/obj"
+	//web "ep/web"
+	mme "ep/Execs/methods"
 	"fmt"
 	util "io/ioutil"
 	"os"
@@ -24,9 +28,6 @@ func main() {
 	// base.Connecting()
 	// var args map[interface{}]string = ReadJson()
 	// RunCode(string(args["code"]), string(args["task_name_id"]))
-	// var userCode = "double AddTwoNumbers(int a, int b){return a + b;}"
-	// RunCode("cpp", userCode, "AddTwoNumbers")
-
 	// var bf = `  int    AddTwoBB(int a,   int s)  {
 	// 	int apple = 12  ;
 	// 	int dos = 13  ;}  `
@@ -38,8 +39,6 @@ func main() {
 
 	// SaveFileTest()
 	// fmt.Println(cpp.Runner(""))
-
-	// Runner()
 
 	// vdss := make(chan string, 1)
 	// vdss <- "CCD"
@@ -63,10 +62,17 @@ func main() {
 	// Turner(pointerCheck)
 	// fmt.Println(pointerCheck[0])
 
-	// web.Runner()
-	Checking()
-}
+	//Checking()
+	//web.Runnersss()
 
+	var userCode = "double AddTwoNumbers(int a, int b){return a + b;}"
+	RunCode("cpp", userCode, "AddTwoNumbers")
+	// var ast interface{} = 12
+	// fmt.Println(runCode.ToString(ast), runCode.ToString(false))
+
+	var Checker = mme.StepGiving(-1, []string{"a", "b"}, []string{"int", "int"})
+	fmt.Println(Checker)
+}
 func RunCode(lang string, code string, topic string) {
 	fmt.Println(inputing.Main(lang, code, topic))
 }

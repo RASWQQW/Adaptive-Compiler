@@ -72,7 +72,7 @@ func (cd *Career) ValFinder(needVal string, itype string, wTime int) any { // ne
 	if wTime == -1 {
 		wTime = 600
 	}
-	for wTime == 0 {
+	for wTime != 0 {
 		var sVal map[string]interface{}
 		if strings.ToLower(itype) == "inout" {
 			sVal = cd.INOUTS
@@ -87,6 +87,16 @@ func (cd *Career) ValFinder(needVal string, itype string, wTime int) any { // ne
 			}
 		}
 		time.Sleep(time.Second)
+		wTime = wTime - 1
 	}
 	panic("Value Finding time exeeded")
+}
+
+func Converter[C any](fromVal any) (ok C) {
+	ok, err := fromVal.(C)
+	if !err {
+		panic("types are not equal")
+	}
+	fmt.Println(ok, reflect.ValueOf(ok).Kind())
+	return
 }

@@ -9,7 +9,6 @@ import (
 	"ep/comps/cpp"
 	"fmt"
 	"os"
-	"reflect"
 	"strings"
 
 	"golang.org/x/exp/slices"
@@ -292,8 +291,8 @@ func Compiler(cmp *obj.Container) string {
 	// full collector of objects that constists Career object which contains value of each async running func
 	//var collector []*obj.Career = []*obj.Career{}
 
-	// here goes all saved func values that gives access locally
-	var collects *obj.Career = &obj.Career{INOUTS: map[string]any{"task_name_id": TopicName}, OUTS: map[string]any{}}
+	// here goes all saved func values that gives access locallys
+	var collects *obj.Career = &obj.Career{INOUTS: map[string]any{"task_name_id": TopicName, "lang": LANG}, OUTS: map[string]any{}}
 	//collector = append(collector, taskIdCar)
 
 	var funcs = []func(*obj.Career){
@@ -305,18 +304,16 @@ func Compiler(cmp *obj.Container) string {
 	var TaskType string = lv.ToString(collects.ValFinder("task_type", "out", -1))
 	var PropCode string = lv.ToString(collects.ValFinder("prop_code", "out", -1))
 	var CurrentFuncReturnType string = lv.ToString(collects.ValFinder("return_type", "out", -1))
-	var ParamsORG = collects.ValFinder("args", "out", -1)
-
-	if reflect.ValueOf(collects.ValFinder("args", "out", -1)).Kind() == reflect.Array {
-
-	}
+	var Params = obj.Converter[[][]string](collects.ValFinder("args", "out", -1))
+	var ParamsNames []string = obj.Converter[[]string](collects.ValFinder("arg_names", "out", -1))
+	var ParamsTypes []string = obj.Converter[[]string](collects.ValFinder("arg_types", "out", -1))
 
 	var ProperBaseCode string = strings.ReplaceAll(
 		strings.ReplaceAll(PropCode, "FUNC", CurrentFuncName),
 		"RET_TYPE", CurrentFuncReturnType) //changes for all proper code funcs
 
 	rep("Proper code: ", ProperBaseCode)
-	var ParamCheckingTime int = mt.StepGiving(-1, Params)
+	var ParamCheckingTime int = mt.StepGiving(-1, ParamsNames, ParamsTypes)
 
 	// There i have to ready current topic giving vals and current code
 	// and it happens once but rndomly saves it many time

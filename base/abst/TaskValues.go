@@ -80,7 +80,7 @@ func (ctx *BaseConnection) GetFunction(worker *obj.Career) /*[]string*/ {
 	funcVals.Scan(&returnType, &funcName)
 
 	worker.OUTS["return_type"] = returnType
-	worker.INOUTS["func_name"] = funcName
+	worker.OUTS["func_name"] = funcName
 	//return []string{returnType, funcName}
 }
 
@@ -166,14 +166,15 @@ func (ctx *BaseConnection) GetTaskByName(values *obj.Career) { //(int, string, s
 	} else {
 		var retid int
 		var taskType int
+		var taskTypeVal []map[string]string
 		for res.Next() {
 			res.Scan(&retid, &taskType)
+			taskTypeVal = ctx.Reader(false, []string{"type_name"}, "TaskTypes", string(fmt.Sprintf("WHERE id = %d", taskType)))
 			// fmt.Println("Current id in for scan: ", retid)
 		}
 
-		values.OUTS["task_type"] = []string{fmt.Sprintf("%d", taskType)}
-		values.OUTS["task_id"] = []string{fmt.Sprintf("%d", retid)}
-		// var taskTypeVal = ctx.Reader(false, []string{"type_name"}, "TaskTypes", string(fmt.Sprintf("WHERE id = %d", taskType)))
+		values.OUTS["task_type"] = fmt.Sprintf("%s", taskTypeVal[0]["type_name"])
+		values.OUTS["task_id"] = fmt.Sprintf("%d", retid)
 		// return retid, taskTypeVal[0]["type_name"], task_name_id
 	}
 }

@@ -13,10 +13,10 @@ import (
 
 var envMainPath, _ = os.Getwd()
 
-func StepGiving(task_id int, MainParams [][]string) int {
+func StepGiving(task_id int, MainParams []string, MainParamsTypes []string) int {
 	// Step giving determines whether func have to checked long or short
 
-	var getCodeParamTypes [][]string
+	var getCodeParamTypes []string
 	if task_id >= 0 {
 		// var mainFunc abst.BaseConnection = abst.GetBase()
 		// cnh := make(chan []string)
@@ -24,19 +24,18 @@ func StepGiving(task_id int, MainParams [][]string) int {
 		// getCodeParamTypes = <-cnh
 	} else {
 		//There have to be func that extracts types from [][]object
-		getCodeParamTypes = MainParams
+		getCodeParamTypes = MainParamsTypes
 	}
 
-	var getCodeParamsAmount []string = []string{}
 	var regComp = regexp.MustCompile("(\\[\\d*\\])+")
 
 	var typeComplixity int = 0
 	for _, paramType := range getCodeParamTypes {
-		var counts []string = regComp.FindAllString(paramType[0], -1)
-		typeComplixity = typeComplixity + (len(counts) + 1)
+		var counts []string = regComp.FindAllString(paramType, -1)
+		typeComplixity = typeComplixity + (len(counts)) // + 1 there is no way of adding just one [number]
 	}
 
-	typeComplixity = len(getCodeParamsAmount) * typeComplixity
+	typeComplixity = len(MainParams) * typeComplixity
 	var from int = 25
 	var to int = 95 // in reality it goes to "to" + "from" `400`
 
@@ -49,11 +48,13 @@ func StepGiving(task_id int, MainParams [][]string) int {
 	for anchor := range colls {
 		var thre []int = colls[anchor][0]
 		if len(thre) < 1 {
-			thre[0] = typeComplixity + 1
+			thre[0] = typeComplixity + 1 // to make next value been chosen so the anchor's 0 val is big at typecomp
 		}
+		// it checks by ascending of anc values so there is no need of more than
 		if typeComplixity < thre[0] {
 			from = colls[anchor][1][0]
 			to = colls[anchor][1][1]
+			break
 		}
 	}
 
