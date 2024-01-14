@@ -27,10 +27,14 @@ func newHub() *hub {
 
 func server(port string) error {
 	h := newHub()
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
+
 	mux := http.NewServeMux()
 	mux.Handle("/", websocket.Handler(func(ws *websocket.Conn) {
 		handler(ws, h)
 	}))
+
 	s := http.Server{Addr: ":" + port, Handler: mux}
 	return s.ListenAndServe()
 }

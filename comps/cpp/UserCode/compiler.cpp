@@ -4,9 +4,11 @@ using namespace std;
 
 
 double AddTwoNumbers(int a, int b){return a + b;}
+
+
 int main(){
-	int a = 207;
-int b = 338;
+	int a = 8;
+int b = 10;
  
 
  cout << AddTwoNumbers(a=a, b=b);

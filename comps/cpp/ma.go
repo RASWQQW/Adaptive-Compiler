@@ -1,19 +1,24 @@
 package cpp
 
 import (
+	execs "ep/Execs/BotCompiler"
 	"fmt"
 	"os"
 	"os/exec"
 	"strings"
+	//"GOPROJECT/Execs/CppPr/FileSaveManager"
 )
 
-func main() {
+type apple = interface {
+	~[]string
+}
 
+func main() {
 	// here  occurs only commands related to cpp and its compilation
 	fmt.Println("Compliation start")
 }
 
-func Runner(currentGivenPath string, returns chan []string) []string {
+func Runner(currentGivenPath string, returns chan []string, profEl *execs.Profile, filename string) []string {
 	var currentPath string = ""
 	if len(currentGivenPath) >= 1 {
 		currentPath = currentGivenPath
@@ -22,7 +27,10 @@ func Runner(currentGivenPath string, returns chan []string) []string {
 		currentPath = path + "\\comps\\cpp\\ProperCode"
 
 	}
-	exec.Command("powershell.exe", "-c", fmt.Sprintf("cd %s; g++ compiler.cpp", currentPath)).Run()
+	var profPath string = currentPath + "\\" + profEl.Name
+	var filePath string = currentPath + "\\" + filename
+
+	exec.Command("powershell.exe", "-c", fmt.Sprintf("cd %s; g++"+filePath, profPath)).Run()
 	var result2 = exec.Command("powershell.exe", fmt.Sprintf("cd %s; cmd /C a.exe ", currentPath))
 
 	var errs strings.Builder

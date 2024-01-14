@@ -7,15 +7,21 @@ import (
 	"encoding/json"
 	inputing "ep/Execs"
 
-	// runCode "ep/LevelFuncs"
+	//"math"
+	"net/http"
+	"strings"
+
+	_ "ep/LevelFuncs"
 	baseCalls "ep/base/abst"
 
 	// obj "ep/inputing/obj"
-	//web "ep/web"
-	mme "ep/Execs/methods"
+
+	_ "ep/web/gorTest"
+
 	"fmt"
 	util "io/ioutil"
 	"os"
+	"os/exec"
 )
 
 func BaseCheck() {
@@ -67,12 +73,58 @@ func main() {
 
 	var userCode = "double AddTwoNumbers(int a, int b){return a + b;}"
 	RunCode("cpp", userCode, "AddTwoNumbers")
+
+	//fmt.Println(math.Abs(float64(1 - 1)))
+
+	// var res = make(map[interface{}]interface{}, 2)
+	// var byterd bytes.Buffer
+
+	//io.ReadAll(&byterd, )
+	//byterd.ReadString()
+	// inputing2.Requester2()
+	// json.Unmarshal([]byte("{\"checker\": \"check\"}"), &res)
+	// fmt.Println(res["checker"])
+
 	// var ast interface{} = 12
 	// fmt.Println(runCode.ToString(ast), runCode.ToString(false))
+	// web.Runnersss()
+	//var Checker = mme.StepGiving(-1, []string{"a", "b"}, []string{"int", "int"})
+	//fmt.Println(Checker)
 
-	var Checker = mme.StepGiving(-1, []string{"a", "b"}, []string{"int", "int"})
-	fmt.Println(Checker)
+	// fmt.Println(os.Args[0])
+	//gorTest.Mainerd()
+	// wb.Runnersss()
 }
+func RequestTesting() {
+	var sendTmp string = `
+					curl -H "Content-Type: application/json" 
+					-X POST -d '{{JSON}}'
+					{{URL}}`
+
+	//EXAMPLE
+	//curl.exe -X POST https://api.jdoodle.com/v1/auth-token/ -H 'Content-Type: application/json' -H 'User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0' --data-binary '{"clientId": "b86eafbab040cfd06f729b4f7d233f2d", "clientSecret": "85abad0125e7efdfeb9db2deb1b4155b919c65963deb43a0391ee6209cc71ba9"}'
+
+	var regOut strings.Builder
+	var regLink string = "https://api.jdoodle.com/v1/auth-token"
+	var clId string = "b86eafbab040cfd06f729b4f7d233f2d"
+	var cl_sec string = "35d1146666e6034587c38e86a81aa7f614696a7d172c5ec588a4aaa6788b6405s"
+
+	regJs := map[string]string{"clientId": clId, "clientSecret": cl_sec}
+
+	regJsString, _ := json.Marshal(regJs)
+
+	reg := exec.Command("cmd.exe", "-c", strings.ReplaceAll(strings.ReplaceAll(sendTmp, "{{JSON}}", string(regJsString)), "{{URL}}", regLink))
+	reg.Stdout = &regOut
+	exec.Command("cmd.exe", "-c")
+
+	//WITH QUERY LIBRARY
+	query, _ := http.Post(regLink, "application-json", strings.NewReader(string(regJsString)))
+	defer query.Body.Close()
+	var res map[any]any
+	json.NewDecoder(query.Body).Decode(&res)
+
+}
+
 func RunCode(lang string, code string, topic string) {
 	fmt.Println(inputing.Main(lang, code, topic))
 }

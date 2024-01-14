@@ -17,7 +17,7 @@ func ToString(val interface{}) string {
 	return fmt.Sprintf(kinds[reflect.ValueOf(val).Kind().String()], val)
 }
 
-func Rept(vals ...any) {
+func R(vals ...any) {
 	var valss []interface{} = []interface{}{}
 	for v, _ := range vals {
 		valss = append(valss, ToString(vals[v]))
