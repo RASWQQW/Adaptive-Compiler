@@ -22,7 +22,7 @@ type Profile struct {
 }
 
 func FileCodeGenerator(TaskPeriod int) (NCode string) {
-	NCode = lv.ToString(10000+rand.Int63()+rand.Int63()) + string(TaskPeriod) + "TP"
+	NCode = lv.ToString(10000+rand.Int63()+rand.Int63()) + lv.ToString(TaskPeriod) + "TP"
 	rr, _ := os.ReadDir(PATHG + "\\comps\\cpp\\ParalelVaries")
 	if slices.ContainsFunc(rr, func(name os.DirEntry) bool {
 		if fmt.Sprintf("%s", name.Name) == NCode {

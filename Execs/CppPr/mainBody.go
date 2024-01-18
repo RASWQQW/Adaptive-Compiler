@@ -128,28 +128,34 @@ var LANG_G string = ""
 var Ncounter chan int = make(chan int, 1)
 var DELETEFOLDERNAMES chan []string = make(chan []string)
 
-func codeSaving(LoCode string, ProperBaseCode string, staticHeader string, callMain string, Inputs string, chStep int) string {
+func codeSaving(LoCode string, ProperBaseCode string, staticHeader string, callMain string, Inputs string, chStep int, ProfGat []string) string {
 	// here goes saving a two proper and user func code each other
 	// its a code from user
-
 	var Profile = compil.SaveProfile(LoCode, ProperBaseCode, LANG_G, Ncounter)
 
-	var ppcodeUser string = path + "\\UserCode"
-	SaveCode(ppcodeUser+"\\"+Profile.Name+"\\"+Profile.UserCName, staticHeader+"\n"+LoCode+"\n"+callMain)
+	var CommonPath string = path + "\\ParalelVaries"
+
+	//create main folder
+	//os.Mkdir(CommonPath+"\\"+Profile.Name, os.ModePerm)
+	//create file
+	SaveCode(CommonPath+"\\"+Profile.Name+"\\"+Profile.UserCName, staticHeader+"\n"+LoCode+"\n"+callMain)
 	vdd1 := make(chan []string)
 	//var userCompRes []string =
 
-	go cpp.Runner(ppcodeUser, vdd1, Profile, Profile.UserCName) //Profile
+	go cpp.Runner(CommonPath, vdd1, Profile, Profile.UserCName) //Profile
 	userCompRes := <-vdd1
 
 	// its a proper one
-	var ppcodeProper string = path + "\\ProperCode"
-	SaveCode(ppcodeProper+"\\"+Profile.Name+"\\"+Profile.ProperCName, staticHeader+"\n"+ProperBaseCode+"\n"+callMain)
+	SaveCode(CommonPath+"\\"+Profile.Name+"\\"+Profile.ProperCName, staticHeader+"\n"+ProperBaseCode+"\n"+callMain)
 	vvd2 := make(chan []string)
 
 	// because its a method  and can gain res via chan
-	go cpp.Runner(ppcodeProper, vvd2, Profile, Profile.ProperCName) //Profile
+	go cpp.Runner(CommonPath, vvd2, Profile, Profile.ProperCName) //Profile
 	properCompRes := <-vvd2
+
+	// adding to the pointer list the value of current Profile
+	ProfGat = append(ProfGat, Profile.Name)
+	fmt.Println("CUR VAL: ", ProfGat)
 
 	fmt.Println("Checking Step: ", chStep)
 	if len(userCompRes[1]) > 0 || len(properCompRes[1]) > 0 {
@@ -195,7 +201,7 @@ func CompilingResult(
 
 				// This have to changed
 				var Inputs string = LoCode[:len("Arg Count")]
-				if dd := codeSaving(LoCode, ProperBaseCode, SaveCode, Inputs, "", 1); dd == "False" {
+				if dd := codeSaving(LoCode, ProperBaseCode, SaveCode, Inputs, "", 1, []string{}); dd == "False" {
 					return "Your code is correct"
 				} else {
 					return dd
@@ -208,6 +214,7 @@ func CompilingResult(
 		//DEF CONST VALS AND mt TO SAVE
 
 		fmt.Println("Code checking time: ", lv.ToString(ParamCheckingTime))
+		var Profs []string = []string{} // gathering all profiles around goroutins
 		var results []chan string = []chan string{}
 		var ids []int = []int{}
 
@@ -257,7 +264,7 @@ func CompilingResult(
 
 				// THEE I GOTTA WRITE LITTLE FILE MANAGEMENT TO WRITE AND GET OUTPUT OF EXACT PROCESS RUNNING
 				// and finally goes checking by compiling and waiting it
-				var res string = codeSaving(LoCode, ProperBaseCode, StaticStartCode, MainFunc, DataTypes, t)
+				var res string = codeSaving(LoCode, ProperBaseCode, StaticStartCode, MainFunc, DataTypes, t, Profs)
 				if res != "False" {
 					giver <- res
 				} else {
@@ -284,6 +291,15 @@ func CompilingResult(
 				continue
 			}
 		}
+		// fmt.Println("CODE COUNT: ", len(Profs))
+		// //CLEANING ALL FOLDERS THAT FOR CHECK
+		// for _, value := range Profs {
+		// 	var path string = path + "\\ParalelVaries\\" + value
+		// 	err := os.Remove(path)
+		// 	if err == nil {
+		// 		fmt.Println("Path was gone removed " + path)
+		// 	}
+		// }
 		return "Your code is proper as well"
 	}
 	// and here have to be func creator which creates func code to save in file

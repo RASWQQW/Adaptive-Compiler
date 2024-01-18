@@ -24,14 +24,16 @@ func Runner(currentGivenPath string, returns chan []string, profEl *execs.Profil
 		currentPath = currentGivenPath
 	} else {
 		path, _ := os.Getwd()
-		currentPath = path + "\\comps\\cpp\\ProperCode"
+		currentPath = path + "\\comps\\cpp\\ParalelVaries"
 
 	}
 	var profPath string = currentPath + "\\" + profEl.Name
-	var filePath string = currentPath + "\\" + filename
+	//var filePath string = currentPath + "\\" + profEl.Name + "\\" + filename
 
-	exec.Command("powershell.exe", "-c", fmt.Sprintf("cd %s; g++"+filePath, profPath)).Run()
-	var result2 = exec.Command("powershell.exe", fmt.Sprintf("cd %s; cmd /C a.exe ", currentPath))
+	fmt.Println("PATH: " + profPath)
+	err := exec.Command("powershell.exe", "-c", fmt.Sprintf("cd %s; g++ "+filename, profPath)).Run()
+	fmt.Println("OUT ERR: ", err)
+	var result2 = exec.Command("powershell.exe", fmt.Sprintf("cd %s; cmd /C a.exe ", profPath))
 
 	var errs strings.Builder
 	var stdread strings.Builder
@@ -42,6 +44,7 @@ func Runner(currentGivenPath string, returns chan []string, profEl *execs.Profil
 
 	// fmt.Printf("Output of: %s", strings.Trim(string(outpp[:]), " "))
 	// fmt.Println("Result at end:", stdread.String(), errs.String())
+	fmt.Println("Result: "+stdread.String(), errs.String())
 	returns <- []string{stdread.String(), errs.String()}
 	return []string{stdread.String(), errs.String()}
 }

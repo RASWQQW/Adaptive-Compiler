@@ -14,10 +14,14 @@ import (
 	_ "ep/LevelFuncs"
 	baseCalls "ep/base/abst"
 
+	"ep/web/mainer"
+	_ "ep/web/mainer"
+
 	// obj "ep/inputing/obj"
 
-	_ "ep/web/gorTest"
-
+	// dds "ep/web/gorTest"
+	// execs "ep/Execs/BotCompiler"
+	// rn "ep/comps/cpp"
 	"fmt"
 	util "io/ioutil"
 	"os"
@@ -71,8 +75,18 @@ func main() {
 	//Checking()
 	//web.Runnersss()
 
-	var userCode = "double AddTwoNumbers(int a, int b){return a + b;}"
-	RunCode("cpp", userCode, "AddTwoNumbers")
+	// comp.FileCodeGenerator(1212)
+	// dd.Runnersss()
+
+	// restulter := make(chan []string)
+
+	// getName := "cpp-19781285399816371991TP"
+	// var pr *execs.Profile = &execs.Profile{Name: getName, UserCName: getName + "_User.cpp", ProperCName: getName + "_Proper.cpp", Lang: "cpp"}
+	// rn.Runner("", restulter, pr, pr.UserCName)
+
+	mainer.Runnersss()
+	// var userCode = "double AddTwoNumbers(int a, int b){return a + b;}"
+	// RunCode("cpp", userCode, "AddTwoNumbers")
 
 	//fmt.Println(math.Abs(float64(1 - 1)))
 
