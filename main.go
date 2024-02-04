@@ -6,16 +6,16 @@ import (
 
 	"encoding/json"
 	inputing "ep/Execs"
+	"ep/web/Mainer"
 
 	//"math"
 	"net/http"
 	"strings"
 
 	_ "ep/LevelFuncs"
-	baseCalls "ep/base/abst"
+	// Mainer "ep/web/Mainer"
 
-	"ep/web/mainer"
-	_ "ep/web/mainer"
+	baseCalls "ep/base/abst"
 
 	// obj "ep/inputing/obj"
 
@@ -47,25 +47,6 @@ func main() {
 	// 	"After: ", one, two)
 	// TestingSlice()
 
-	// SaveFileTest()
-	// fmt.Println(cpp.Runner(""))
-
-	// vdss := make(chan string, 1)
-	// vdss <- "CCD"
-	// fmt.Println("Bottom val")
-	// var dds chan string = vdss
-	// var dds2 chan string = vdss
-
-	// kk := <-dds
-	// fmt.Println(dds, dds2, kk)
-
-	// // fmt.Println(vdss, <-vdss)
-	// var dd *string = &kk
-	// fmt.Println(dd, *dd)
-	// *dd = "Oppa"
-	// fmt.Println(dd, *dd, kk)
-	// fmt.Println(<-dds2)
-
 	// Runner1()
 
 	// var pointerCheck []string = []string{"Apple"}
@@ -83,10 +64,6 @@ func main() {
 	// getName := "cpp-19781285399816371991TP"
 	// var pr *execs.Profile = &execs.Profile{Name: getName, UserCName: getName + "_User.cpp", ProperCName: getName + "_Proper.cpp", Lang: "cpp"}
 	// rn.Runner("", restulter, pr, pr.UserCName)
-
-	mainer.Runnersss()
-	// var userCode = "double AddTwoNumbers(int a, int b){return a + b;}"
-	// RunCode("cpp", userCode, "AddTwoNumbers")
 
 	//fmt.Println(math.Abs(float64(1 - 1)))
 
@@ -107,8 +84,18 @@ func main() {
 
 	// fmt.Println(os.Args[0])
 	//gorTest.Mainerd()
-	// wb.Runnersss()
+
+	// for {
+	// 	var userCode = "double AddTwoNumbers(int a, int b){return a + b;}"
+	// 	RunCode("cpp", userCode, "AddTwoNumbers")
+	// }
+	WebRunner()
+
 }
+func WebRunner() {
+	Mainer.Runnersss()
+}
+
 func RequestTesting() {
 	var sendTmp string = `
 					curl -H "Content-Type: application/json" 

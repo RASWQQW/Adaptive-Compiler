@@ -3,17 +3,24 @@ package inputing
 import (
 	compil "ep/Execs/BotCompiler"
 	"ep/Execs/methods"
+
 	mt "ep/Execs/methods"
 	obj "ep/Execs/obj"
 	lv "ep/LevelFuncs"
 	bs "ep/base/abst"
 	cpp "ep/comps/cpp"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
 	"golang.org/x/exp/slices"
 )
+
+// for gathering all for delete files
+type Gatherer struct {
+	Lister []string
+}
 
 var gbPath, _ = os.Getwd()
 
@@ -114,13 +121,16 @@ func CodeMatching(LoCode string, CurrentFuncName string, CurrentFuncReturnType s
 }
 
 func SaveCode(path string, res string) {
+	//ar dd sync.Mutex too long to create by sequence
+	//dd.Lock() // all of process stops
 	cc, err := os.Create(path)
 	defer cc.Close()
 	if err != nil {
-		panic(err)
+		//panic(err)
+		fmt.Println("Error code shown (not serious): ", err)
 	}
 	cc.WriteString(string(res))
-
+	//dd.Unlock() // and realeses
 }
 
 // GLOBAL CHANNEL VALUE
@@ -128,12 +138,24 @@ var LANG_G string = ""
 var Ncounter chan int = make(chan int, 1)
 var DELETEFOLDERNAMES chan []string = make(chan []string)
 
-func codeSaving(LoCode string, ProperBaseCode string, staticHeader string, callMain string, Inputs string, chStep int, ProfGat []string) string {
+func codeSaving(
+	LoCode string,
+	ProperBaseCode string,
+	staticHeader string,
+	callMain string,
+	Inputs string,
+	chStep int,
+	ProfGat *Gatherer) string {
 	// here goes saving a two proper and user func code each other
 	// its a code from user
 	var Profile = compil.SaveProfile(LoCode, ProperBaseCode, LANG_G, Ncounter)
 
 	var CommonPath string = path + "\\ParalelVaries"
+
+	// IT MAKES MORE SENSE ADDING BEFORE SO ALL OFF CREATED OR NOT CAN BE COUNTED
+	// adding to the pointer list the value of current Profile
+	ProfGat.Lister = append(ProfGat.Lister, Profile.Name)
+	fmt.Println("CUR VAL: ", ProfGat)
 
 	//create main folder
 	//os.Mkdir(CommonPath+"\\"+Profile.Name, os.ModePerm)
@@ -152,10 +174,6 @@ func codeSaving(LoCode string, ProperBaseCode string, staticHeader string, callM
 	// because its a method  and can gain res via chan
 	go cpp.Runner(CommonPath, vvd2, Profile, Profile.ProperCName) //Profile
 	properCompRes := <-vvd2
-
-	// adding to the pointer list the value of current Profile
-	ProfGat = append(ProfGat, Profile.Name)
-	fmt.Println("CUR VAL: ", ProfGat)
 
 	fmt.Println("Checking Step: ", chStep)
 	if len(userCompRes[1]) > 0 || len(properCompRes[1]) > 0 {
@@ -201,7 +219,7 @@ func CompilingResult(
 
 				// This have to changed
 				var Inputs string = LoCode[:len("Arg Count")]
-				if dd := codeSaving(LoCode, ProperBaseCode, SaveCode, Inputs, "", 1, []string{}); dd == "False" {
+				if dd := codeSaving(LoCode, ProperBaseCode, SaveCode, Inputs, "", 1, &Gatherer{[]string{}}); dd == "False" {
 					return "Your code is correct"
 				} else {
 					return dd
@@ -214,9 +232,9 @@ func CompilingResult(
 		//DEF CONST VALS AND mt TO SAVE
 
 		fmt.Println("Code checking time: ", lv.ToString(ParamCheckingTime))
-		var Profs []string = []string{} // gathering all profiles around goroutins
 		var results []chan string = []chan string{}
 		var ids []int = []int{}
+		var NGatherer *Gatherer = &Gatherer{[]string{}} // gathering all profiles around goroutins
 
 		for t := 0; t < ParamCheckingTime; t++ {
 			// Func for run in goroutine and set result into channel
@@ -264,7 +282,7 @@ func CompilingResult(
 
 				// THEE I GOTTA WRITE LITTLE FILE MANAGEMENT TO WRITE AND GET OUTPUT OF EXACT PROCESS RUNNING
 				// and finally goes checking by compiling and waiting it
-				var res string = codeSaving(LoCode, ProperBaseCode, StaticStartCode, MainFunc, DataTypes, t, Profs)
+				var res string = codeSaving(LoCode, ProperBaseCode, StaticStartCode, MainFunc, DataTypes, t, NGatherer)
 				if res != "False" {
 					giver <- res
 				} else {
@@ -286,20 +304,16 @@ func CompilingResult(
 				if !strings.Contains(copier, "Good") {
 					// if one of them already gives error it returns it
 					// code must be checked sequantially due to compelexity rate of parameters
+					go DeleteAllWhenDone(v+1, results, NGatherer)
 					return copier
+
 				}
 				continue
 			}
 		}
-		// fmt.Println("CODE COUNT: ", len(Profs))
-		// //CLEANING ALL FOLDERS THAT FOR CHECK
-		// for _, value := range Profs {
-		// 	var path string = path + "\\ParalelVaries\\" + value
-		// 	err := os.Remove(path)
-		// 	if err == nil {
-		// 		fmt.Println("Path was gone removed " + path)
-		// 	}
-		// }
+		//IF ITS  WITH ONLY HAVING A ALL PROPER OUT
+		go DeleteAllWhenDone(-1, results, NGatherer)
+
 		return "Your code is proper as well"
 	}
 	// and here have to be func creator which creates func code to save in file
@@ -311,18 +325,43 @@ func CompilingResult(
 	return "Noting were checked"
 }
 
+// DELETING ALWAYS ALL VALUES NO MATTER WRONG OT CORRECT
+func DeleteAllWhenDone(fromId int, Callers []chan string, Gatherers *Gatherer) {
+	if fromId > -1 {
+		for fromC := fromId; fromC < len(Callers); fromC++ {
+			select {
+			case <-Callers[fromC]:
+				continue // anyway it continues to go
+			}
+		}
+	}
+	fmt.Println("CODE COUNT: ", len(Gatherers.Lister))
+	//CLEANING ALL FOLDERS THAT FOR CHECK
+	for _, value := range Gatherers.Lister {
+		var pathCur string = path + "\\ParalelVaries\\" + value
+		err := os.RemoveAll(pathCur)
+		if err == nil {
+			fmt.Println("Path was gone removed " + pathCur)
+			log.Println("Path was gone removed " + pathCur)
+		} else {
+			log.Println(err)
+		}
+	}
+}
+
 func Compiler(cmp *obj.Container) string {
 	// return All(cmp)
 	const LANG = "cpp"
 	LANG_G = LANG
 	Ncounter <- 0
+	defer func() { <-Ncounter }()
 
 	// AND THERE GOES LITTLE REPORT
 	var rep = func(message string, val interface{}) {
 		fmt.Println(message, val)
 	}
 
-	var LoCode, _ = mt.Aligner(cmp.GetVal("Code"))
+	var _, LoCode = mt.Aligner(cmp.GetVal("Code"))
 	var TopicName = cmp.GetVal("Topic")
 
 	// and passing its values from aboveds

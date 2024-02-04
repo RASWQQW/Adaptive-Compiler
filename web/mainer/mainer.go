@@ -1,9 +1,10 @@
-package mainer
+package Mainer
 
 import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -73,9 +74,10 @@ func Runnersss() {
 
 			fmt.Println(vv, reflect.ValueOf(vv).Kind(), "Client message", message_get_from)
 			//time.Sleep(time.Second * 1)
-			fmt.Println("Current text" + string(vv))
+			fmt.Println("Current text ", strconv.Itoa(vv))
 			if len(message_get_from) > 3 {
-				con.WriteMessage(vv, []byte(inputing.Main("cpp", string(message_get_from), "AddTwoNumbers")))
+				var message = inputing.Main("cpp", string(message_get_from), "AddTwoNumbers")
+				con.WriteMessage(vv, []byte(message))
 			} else {
 				con.WriteMessage(vv, []byte("Input code is too small"))
 			}
@@ -84,10 +86,8 @@ func Runnersss() {
 			// } else {
 			// 	con.WriteMessage(vv, []byte(inputing.Main("cpp", string(message_get_from), "AddTwoNumbers")))
 			// }
-
 		}
 	})
-
 	mod.Run("127.0.0.1:8080")
 }
 
