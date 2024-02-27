@@ -9,10 +9,12 @@ import (
 	"ep/web/Mainer"
 
 	//"math"
+
+	"ep/Execs/BotCompiler"
+	_ "ep/LevelFuncs"
 	"net/http"
 	"strings"
 
-	_ "ep/LevelFuncs"
 	// Mainer "ep/web/Mainer"
 
 	baseCalls "ep/base/abst"
@@ -89,8 +91,11 @@ func main() {
 	// 	var userCode = "double AddTwoNumbers(int a, int b){return a + b;}"
 	// 	RunCode("cpp", userCode, "AddTwoNumbers")
 	// }
-	WebRunner()
+	// WebRunner()
 
+	//BotCompiler.CompilerRequester()
+
+	BotCompiler.TimeLimitCompiler(1.1)
 }
 func WebRunner() {
 	Mainer.Runnersss()

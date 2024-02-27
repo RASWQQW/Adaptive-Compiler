@@ -2,16 +2,25 @@
 // in one language then it waits till it translates
 // then this code keeps as global file or text
 // and other check cases are just copies global code and changes value
+
+// CHANGES WHCIH REQUIRED
+// MAKE TIME OF CODE AND MEMBERY USAGE IMORTANT AS IT  WILL  LEVERAGE USER STAT ON EACH RAN CODE/TOTAL SCORE
 package BotCompiler
 
 import (
 	"encoding/json"
+	"ep/LevelFuncs"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"os/exec"
+	"reflect"
 	"strings"
+	"time"
 )
+
+var MAINPATH, _ = os.Getwd()
 
 func Requester() {
 	fmt.Println("Start of requesting")
@@ -34,17 +43,41 @@ type ReadVals struct {
 	CompilationStatus string `form:"compilationStatus"`
 }
 
-func Requester2() {
+// complete this code to run vals
+func TimeLimitCompiler(
+	sleepTime float64,
+	ReturnValue chan []string,
+	params map[string]any,
+	RunFunc func(map[string]any, chan []string) []string) {
+	if RunFunc == nil {
+		//It runs func of request for default if there is no given func
+		RunFunc = CompilerRequester
+	}
+	go RunFunc(params, ReturnValue) // Runs in background until code it ends or limit time comes to an end
+	time.Sleep(time.Second * time.Duration(sleepTime))
+	//if the given time ends fun will set value  to chan by itself
+	ReturnValue <- []string{"Time limit exceeded", "TIMELIMIT", "1"}
+}
+
+func CompilerRequester(Values map[string]any, RetVals chan []string) []string {
 
 	var regLink string = "https://api.jdoodle.com/v1/execute"
 	var clId string = "b86eafbab040cfd06f729b4f7d233f2d"
 	var cl_sec string = "85abad0125e7efdfeb9db2deb1b4155b919c65963deb43a0391ee6209cc71ba9"
+	getProf := reflect.ValueOf(Values["ProfileObj"])
+
+	if getProf.Kind().String() != "Profile" {
+		panic("Given name of object is wrong typed which must be Profile instance")
+	}
+
+	read, _ := os.ReadFile(LevelFuncs.ToString(Values["CommonPath"]) + "\\" + getProf.FieldByName("Name").String() + "\\" + LevelFuncs.ToString(Values["filename"])) //MAINPATH + "\\comps\\cpp\\UserCode\\compiler.cpp")
+	var ReadAndPassString string = string(read)
 
 	regJs := map[string]string{
 		"clientId":     clId,
 		"clientSecret": cl_sec,
-		"script":       "print('Apple is sweet')",
-		"language":     "python3"}
+		"script":       ReadAndPassString, //"using namespace std; \n#include <iostream> \n\nint main() {cout << \"Apple is sweet!\" << endl; return 0; }", //"std::cout<< 'Apple is sweet';",
+		"language":     "cpp"}
 
 	regJsString, _ := json.Marshal(regJs)
 
@@ -52,20 +85,30 @@ func Requester2() {
 	query, _ := http.Post(regLink, "application/json", strings.NewReader(string(regJsString)))
 	defer query.Body.Close()
 
-	res := make(map[any]any)
+	//res := make(map[any]any)
 	rVal := ReadVals{}
 
 	resbod, _ := ioutil.ReadAll(query.Body)
-	json.Unmarshal(resbod, &res)
+	json.Unmarshal(resbod, &rVal)
 
 	fmt.Println("res before: ", rVal)
-	fmt.Println("res after: ", res)
 	fmt.Println("StatCode: ", query.StatusCode)
 	fmt.Println("Body: ", string(resbod))
-	fmt.Println("Compiled Code: ", res["output"])
-
+	//fmt.Println("res after: ", res)
+	//fmt.Println("Compiled Code: ", res["output"])
 	//fmt.Println("Stat: ", query.Status)
 	//fmt.Println("Response:", query.Request.Response)
+
+	if rVal.StatusCode == 200 {
+		if rVal.CompilationStatus == "1" {
+			RetVals <- []string{rVal.Output, ""}
+			return []string{rVal.Output, ""}
+		}
+	}
+
+	RetVals <- []string{rVal.Output, fmt.Sprintf("Error: %s", rVal.Output)}
+	return []string{rVal.Output, fmt.Sprintf("Error: %s", rVal.Output)}
+	// panic("Code is not proper")
 }
 
 func Junk() {

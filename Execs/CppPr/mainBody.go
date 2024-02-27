@@ -1,14 +1,17 @@
 package inputing
 
 import (
+	"ep/Execs/BotCompiler"
 	compil "ep/Execs/BotCompiler"
 	"ep/Execs/methods"
+	"ep/LevelFuncs"
+	"ep/comps/cpp"
+	_ "ep/comps/cpp"
 
 	mt "ep/Execs/methods"
 	obj "ep/Execs/obj"
 	lv "ep/LevelFuncs"
 	bs "ep/base/abst"
-	cpp "ep/comps/cpp"
 	"fmt"
 	"log"
 	"os"
@@ -145,45 +148,52 @@ func codeSaving(
 	callMain string,
 	Inputs string,
 	chStep int,
-	ProfGat *Gatherer) string {
+	ProfGat *Gatherer,
+	CodeVals string) string {
 	// here goes saving a two proper and user func code each other
 	// its a code from user
 	var Profile = compil.SaveProfile(LoCode, ProperBaseCode, LANG_G, Ncounter)
-
+	var GetTimeCalced float64 = mt.ExecTimeComp(CodeVals)
 	var CommonPath string = path + "\\ParalelVaries"
 
-	// IT MAKES MORE SENSE ADDING BEFORE SO ALL OFF CREATED OR NOT CAN BE COUNTED
+	// IT MAKES MORE SENSE ADDING BEFORE SO ALL OFF CREATED OR DOES NOT, CAN BE COUNTED
 	// adding to the pointer list the value of current Profile
 	ProfGat.Lister = append(ProfGat.Lister, Profile.Name)
 	fmt.Println("CUR VAL: ", ProfGat)
 
-	//create main folder
-	//os.Mkdir(CommonPath+"\\"+Profile.Name, os.ModePerm)
-	//create file
+	//User to Compile
 	SaveCode(CommonPath+"\\"+Profile.Name+"\\"+Profile.UserCName, staticHeader+"\n"+LoCode+"\n"+callMain)
 	vdd1 := make(chan []string)
-	//var userCompRes []string =
-
-	go cpp.Runner(CommonPath, vdd1, Profile, Profile.UserCName) //Profile
-	userCompRes := <-vdd1
 
 	// its a proper one
 	SaveCode(CommonPath+"\\"+Profile.Name+"\\"+Profile.ProperCName, staticHeader+"\n"+ProperBaseCode+"\n"+callMain)
 	vvd2 := make(chan []string)
-
 	// because its a method  and can gain res via chan
-	go cpp.Runner(CommonPath, vvd2, Profile, Profile.ProperCName) //Profile
+	//go TimeLimitCompiler(GetTimeCalced, vvd2, map[string]any{"CommonPath": CommonPath, "ProfileObj": Profile, "filename": Profile.ProperCName}, cpp.Runner) //Profile
+
+	//RUNNING VALUES INP TIMELIMITED AND API COMPILERS
+	for _, vals := range []LevelFuncs.StrListStrChan{{Profile.UserCName, vdd1}, {Profile.ProperCName, vvd2}} {
+		go BotCompiler.TimeLimitCompiler(
+			GetTimeCalced,
+			vals.Val2,
+			map[string]any{"CommonPath": CommonPath, "ProfileObj": Profile, "filename": vals.Val2},
+			cpp.Runner) //Profile
+	}
 	properCompRes := <-vvd2
+	userCompRes := <-vdd1
 
 	fmt.Println("Checking Step: ", chStep)
 	if len(userCompRes[1]) > 0 || len(properCompRes[1]) > 0 {
+		if len(userCompRes) > 2 && userCompRes[2] == "1" {
+			return userCompRes[1]
+		}
 		return "Error: " + userCompRes[1] + properCompRes[1]
 	} else {
 		if strings.ReplaceAll(properCompRes[0], " ", "") != strings.ReplaceAll(userCompRes[0], " ", "") {
 			// WrongCode = true
 			return "Input: " + Inputs + "\n Proper Output: " + properCompRes[0] + "\nYour output: " + userCompRes[0]
 		} else {
-			// Where are all of code is proper
+			// Where all of code is proper
 			fmt.Printf("User result: %s \nProper Code result: %s\n\n", userCompRes[0], properCompRes[0])
 			return "False"
 		}
@@ -241,7 +251,10 @@ func CompilingResult(
 			var TypeGiver = func(t int, giver chan string) {
 				// two of them fils ahead all of and gets place when they are ready
 				var DataTypes string = ""
-				var FuncNameCopy []string = []string{}
+				var FuncParamsPass []string = []string{}
+
+				//VALUES FOR GETTING INFOS ABOUT FUNC PARAMS
+				var ParamBunch [][]string = [][]string{}
 				// var WrongCode bool = false
 
 				for vvs := range MainParamPassing {
@@ -257,7 +270,11 @@ func CompilingResult(
 							// there starts whole process of checking that type and giving value
 							var glen string = mt.GetLen(ListComped)[0]
 							var gtypename string = mt.GetParamType(ListComped)
-							RandVal = mt.GetFullType(name, gtypename, []string{glen}) + mt.RandValSetting(t, gtypename, glen, "list") + ";"
+							var RndValType = mt.GetFullType(name, gtypename, []string{glen})
+							var RndValue = mt.RandValSetting(t, gtypename, glen, "list")
+							RandVal = RndValType + RndValue + ";"
+
+							ParamBunch = append(ParamBunch, []string{RndValType, RndValue}) // adding to value collector
 
 						} else if len(matrixComped) > 0 {
 							var glen []string = mt.GetLen(matrixComped)
@@ -267,24 +284,28 @@ func CompilingResult(
 							for conts := range glen {
 								valsStringsformat = valsStringsformat + ", " + mt.RandValSetting(t, gtypename, glen[conts], "matrix")
 							}
+
+							//THERE I HAVE TO LOOK AT SOME CODE BY TEST RUNNIN WITH LITTLE DEBUG
 							RandVal = FullType + "{" + valsStringsformat + "};"
 						}
 
 					} else {
-						RandVal = fmt.Sprintf("%s %s = %d;", ParamType, name, mt.TypeGuesser(t, string(ParamType)))
+						var GeneratedSingleValue string = LevelFuncs.ToString(mt.TypeGuesser(t, string(ParamType)))
+						ParamBunch = append(ParamBunch, []string{ParamType, GeneratedSingleValue}) // adding to value collector
+						RandVal = fmt.Sprintf("%s %s = %d;", ParamType, name, GeneratedSingleValue)
 					}
 					// here goes adding all inner parameters to put in a row line
 					DataTypes = DataTypes + RandVal + "\n"
 					// it is just FuncName and its parameters adding on sequence
-					FuncNameCopy = append(FuncNameCopy, fmt.Sprintf("%s=%s", name, name))
+					FuncParamsPass = append(FuncParamsPass, fmt.Sprintf("%s=%s", name, name))
 				}
-				var MainFunc string = "\n\nint main(){\n\t" + fmt.Sprintf("%s \n\n cout << %s(%s);", DataTypes, CurrentFuncName, strings.Join(FuncNameCopy, ", ")) + "\n}"
+				var MainFunc string = "\n\nint main(){\n\t" + fmt.Sprintf("%s \n\n cout << %s(%s);", DataTypes, CurrentFuncName, strings.Join(FuncParamsPass, ", ")) + "\n}"
 
 				// THEE I GOTTA WRITE LITTLE FILE MANAGEMENT TO WRITE AND GET OUTPUT OF EXACT PROCESS RUNNING
 				// and finally goes checking by compiling and waiting it
-				var res string = codeSaving(LoCode, ProperBaseCode, StaticStartCode, MainFunc, DataTypes, t, NGatherer)
+				var res string = codeSaving(LoCode, ProperBaseCode, StaticStartCode, MainFunc, DataTypes, t, NGatherer, DataTypes)
 				if res != "False" {
-					giver <- res
+					giver <- res // There goes All results as Time limit or Error etc, beside Proper ones
 				} else {
 					giver <- "Good result:" + res //to get proper result
 				}
@@ -325,7 +346,7 @@ func CompilingResult(
 	return "Noting were checked"
 }
 
-// DELETING ALWAYS ALL VALUES NO MATTER WRONG OT CORRECT
+// DELETING ALWAYS ALL VALUES NO MATTER WRONG OR CORRECT
 func DeleteAllWhenDone(fromId int, Callers []chan string, Gatherers *Gatherer) {
 	if fromId > -1 {
 		for fromC := fromId; fromC < len(Callers); fromC++ {

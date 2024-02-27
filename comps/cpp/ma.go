@@ -1,11 +1,13 @@
 package cpp
 
 import (
-	execs "ep/Execs/BotCompiler"
+	"ep/LevelFuncs"
 	"fmt"
 	"os"
 	"os/exec"
+	"reflect"
 	"strings"
+	// "ep/Execs/execs"
 	//"GOPROJECT/Execs/CppPr/FileSaveManager"
 )
 
@@ -18,20 +20,25 @@ func main() {
 	fmt.Println("Compliation start")
 }
 
-func Runner(currentGivenPath string, returns chan []string, profEl *execs.Profile, filename string) []string {
+// func Runner(CommonPath string, returns chan []string, ProfileObj *execs.Profile, filename string) []string {
+func Runner(InnerVals map[string]any, returns chan []string) []string {
 	var currentPath string = ""
-	if len(currentGivenPath) >= 1 {
-		currentPath = currentGivenPath
+	var profPath string = ""
+	if len(LevelFuncs.ToString(InnerVals["CommonPath"])) >= 1 {
+		currentPath = LevelFuncs.ToString(InnerVals["CommonPath"])
 	} else {
 		path, _ := os.Getwd()
 		currentPath = path + "\\comps\\cpp\\ParalelVaries"
 
 	}
-	var profPath string = currentPath + "\\" + profEl.Name
-	//var filePath string = currentPath + "\\" + profEl.Name + "\\" + filename
+	var ProfVal = reflect.ValueOf(InnerVals["ProfileObj"])
+	if ProfVal.Kind().String() == "Profile" {
+		profPath = currentPath + "\\" + ProfVal.FieldByName("Name").String() //InnerVals["profEl"].Name
+		//var filePath string = currentPath + "\\" + profEl.Name + "\\" + filename
+	}
 
 	fmt.Println("PATH: " + profPath)
-	err := exec.Command("powershell.exe", "-c", fmt.Sprintf("cd %s; g++ "+filename, profPath)).Run()
+	err := exec.Command("powershell.exe", "-c", fmt.Sprintf("cd %s; g++ "+LevelFuncs.ToString(InnerVals["filename"]), profPath)).Run()
 	fmt.Println("OUT ERR: ", err)
 	var result2 = exec.Command("powershell.exe", fmt.Sprintf("cd %s; cmd /C a.exe ", profPath))
 

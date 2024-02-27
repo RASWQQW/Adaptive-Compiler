@@ -3,7 +3,7 @@ using namespace std;
 
 
 
-double AddTwoNumbers(int a, int b){
+double AddTwoNumbers(int[]a, int b){
 	return a + b;
 }
 

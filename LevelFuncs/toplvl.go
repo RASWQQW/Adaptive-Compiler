@@ -46,3 +46,8 @@ func Defaulder(objectName reflect.Type) {
 func maidn() {
 	Defaulder(reflect.TypeOf(DD{}))
 }
+
+type StrListStrChan struct {
+	Val1 string
+	Val2 chan []string
+}
