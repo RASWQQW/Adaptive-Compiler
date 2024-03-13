@@ -74,7 +74,7 @@ func ValIncr(cat string, val int) int {
 	return 12
 }
 
-func ExecTimeComp() int {
+func ExecTimeComp(GenTypes [][]string, RetType [][]string) float64 { //[0] param type [1] value
 	return 1
 }
 
@@ -83,7 +83,7 @@ func ExecTimeLimiter(path string, execer func(string, chan []string) []string) [
 	getReturns <- []string{}
 	go execer(path, getReturns)
 
-	for v := 0; v < ExecTimeComp(); v++ {
+	for v := 0; v < /*ExecTimeComp()*/ 12; v++ {
 		time.Sleep(time.Millisecond)
 	}
 	if len(<-getReturns) < 1 {

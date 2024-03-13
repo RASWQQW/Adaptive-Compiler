@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"regexp"
 	re "regexp"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -85,18 +86,20 @@ func TypeGuesser(incrLevel int, text string) any {
 }
 
 func GetParamType(comp string) string {
+	//must to check that value of text is in the type list
 	var GetTypeString string = regexp.MustCompile("[a-z]+").FindString(comp)
-	if len(GetTypeString) > 0 {
+	if len(GetTypeString) > 0 && slices.Contains([]string{"int", "string", "double", "float", "char", "long"}, GetTypeString) {
 		return GetTypeString
 	}
 	return ""
 }
 
 func GetLen(comp string) []string {
-	var GetListLen = regexp.MustCompile("[\\[\\d*\\]]+").FindAllString(comp, -1)
+	var GetListLen = regexp.MustCompile("(\\[\\d*\\])").FindAllString(comp, -1)
+	fmt.Println(GetListLen)
 	if len(GetListLen) > 0 {
 		for id := range GetListLen {
-			GetListLen[id] = regexp.MustCompile("\\d*").FindString(GetListLen[id])
+			GetListLen[id] = regexp.MustCompile("\\d+").FindString(GetListLen[id])
 		}
 		return GetListLen
 	}
@@ -132,9 +135,9 @@ func RandValSetting(incrLevel int, paramtype string, paramlen string, istype str
 }
 
 func FindMatrix(slice string) string {
-	return string(regexp.MustCompile("([A-Za-z]+[\\[\\]]{4:}").FindString(slice))
+	return string(regexp.MustCompile("[A-Za-z]+(\\[[0-9]*\\]){2,}").FindString(slice))
 }
 
 func FindList(slice string) string {
-	return string(regexp.MustCompile("[A-Za-z]+[\\[]{1}[\\]]{1}").FindString(slice))
+	return string(regexp.MustCompile("[A-Za-z]+(\\[[0-9]*\\]){1,}").FindString(slice))
 }

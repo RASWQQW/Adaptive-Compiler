@@ -5,7 +5,6 @@ import (
 	compil "ep/Execs/BotCompiler"
 	"ep/Execs/methods"
 	"ep/LevelFuncs"
-	"ep/comps/cpp"
 	_ "ep/comps/cpp"
 
 	mt "ep/Execs/methods"
@@ -101,11 +100,11 @@ func CodeMatching(LoCode string, CurrentFuncName string, CurrentFuncReturnType s
 									mainer = append(mainer[0:ind], mainer[ind+1:]...)
 									break
 								} else {
-									return fmt.Sprintf("The current %s values type(matrix) are not matching, given %s need %s", param[1], sect[0]+insq, param[0])
+									return fmt.Sprintf("The current %s value's type(matrix) are not matching, given %s need %s", param[1], sect[0]+insq, param[0])
 								}
 							}
 						} else {
-							return "Types of given value aren't mathcing"
+							return "Types of given value aren't matching"
 						}
 					}
 				}
@@ -141,6 +140,9 @@ var LANG_G string = ""
 var Ncounter chan int = make(chan int, 1)
 var DELETEFOLDERNAMES chan []string = make(chan []string)
 
+// SINGLE INS GLOBAL VALUES
+var GRetFunc []string = []string{}
+
 func codeSaving(
 	LoCode string,
 	ProperBaseCode string,
@@ -149,11 +151,11 @@ func codeSaving(
 	Inputs string,
 	chStep int,
 	ProfGat *Gatherer,
-	CodeVals string) string {
+	CodeVals [][]string) string {
 	// here goes saving a two proper and user func code each other
 	// its a code from user
 	var Profile = compil.SaveProfile(LoCode, ProperBaseCode, LANG_G, Ncounter)
-	var GetTimeCalced float64 = mt.ExecTimeComp(CodeVals)
+	var GetTimeCalced float64 = mt.ExecTimeComp(CodeVals, GRetType)
 	var CommonPath string = path + "\\ParalelVaries"
 
 	// IT MAKES MORE SENSE ADDING BEFORE SO ALL OFF CREATED OR DOES NOT, CAN BE COUNTED
@@ -177,7 +179,7 @@ func codeSaving(
 			GetTimeCalced,
 			vals.Val2,
 			map[string]any{"CommonPath": CommonPath, "ProfileObj": Profile, "filename": vals.Val2},
-			cpp.Runner) //Profile
+			BotCompiler.CompilerRequester) //Profile
 	}
 	properCompRes := <-vvd2
 	userCompRes := <-vdd1
@@ -229,7 +231,9 @@ func CompilingResult(
 
 				// This have to changed
 				var Inputs string = LoCode[:len("Arg Count")]
-				if dd := codeSaving(LoCode, ProperBaseCode, SaveCode, Inputs, "", 1, &Gatherer{[]string{}}); dd == "False" {
+				if dd := codeSaving(
+					LoCode, ProperBaseCode, SaveCode, Inputs, "", 1, &Gatherer{[]string{}},
+					[][]string{} /* optional value need to optemize */); dd == "False" {
 					return "Your code is correct"
 				} else {
 					return dd
@@ -266,6 +270,8 @@ func CompilingResult(
 						var ListComped = mt.FindList(ParamType)
 						var matrixComped = mt.FindMatrix(ParamType)
 						// here starts checking that val is list or matrix
+
+						//THERE MUST DESCRIBED WHAT SHOULD BE DONE IF RETURNS ENUMERABLE VALUE
 						if len(ListComped) > 0 {
 							// there starts whole process of checking that type and giving value
 							var glen string = mt.GetLen(ListComped)[0]
@@ -284,9 +290,10 @@ func CompilingResult(
 							for conts := range glen {
 								valsStringsformat = valsStringsformat + ", " + mt.RandValSetting(t, gtypename, glen[conts], "matrix")
 							}
-
 							//THERE I HAVE TO LOOK AT SOME CODE BY TEST RUNNIN WITH LITTLE DEBUG
+							//Real generated values and full type is in randval word
 							RandVal = FullType + "{" + valsStringsformat + "};"
+							ParamBunch = append(ParamBunch, []string{FullType, "{" + valsStringsformat + "};"})
 						}
 
 					} else {
@@ -299,11 +306,18 @@ func CompilingResult(
 					// it is just FuncName and its parameters adding on sequence
 					FuncParamsPass = append(FuncParamsPass, fmt.Sprintf("%s=%s", name, name))
 				}
-				var MainFunc string = "\n\nint main(){\n\t" + fmt.Sprintf("%s \n\n cout << %s(%s);", DataTypes, CurrentFuncName, strings.Join(FuncParamsPass, ", ")) + "\n}"
+
+				var outputerFunc string = ""
+				if len(GRetFunc) == 2 {
+					outputerFunc = GRetFunc[0] + "(%s(%s));" // by print func check
+				} else {
+					outputerFunc = "cout << %s(%s);" //by mere cout
+				}
+				var MainFunc string = "\n\nint main(){\n\t" + fmt.Sprintf("%s \n\n"+outputerFunc, DataTypes, CurrentFuncName, strings.Join(FuncParamsPass, ", ")) + "\n}"
 
 				// THEE I GOTTA WRITE LITTLE FILE MANAGEMENT TO WRITE AND GET OUTPUT OF EXACT PROCESS RUNNING
 				// and finally goes checking by compiling and waiting it
-				var res string = codeSaving(LoCode, ProperBaseCode, StaticStartCode, MainFunc, DataTypes, t, NGatherer, DataTypes)
+				var res string = codeSaving(LoCode, ProperBaseCode, StaticStartCode, MainFunc, DataTypes, t, NGatherer, ParamBunch)
 				if res != "False" {
 					giver <- res // There goes All results as Time limit or Error etc, beside Proper ones
 				} else {
@@ -408,6 +422,10 @@ func Compiler(cmp *obj.Container) string {
 	var Params = obj.Converter[[][]string](collects.ValFinder("args", "out", -1))
 	var ParamsNames []string = obj.Converter[[]string](collects.ValFinder("arg_names", "out", -1))
 	var ParamsTypes []string = obj.Converter[[]string](collects.ValFinder("arg_types", "out", -1))
+
+	if res := cpp_control(CurrentFuncReturnType); res[0] != "-1" {
+		GRetFunc = res
+	}
 
 	var ProperBaseCode string = strings.ReplaceAll(
 		strings.ReplaceAll(PropCode, "FUNC", CurrentFuncName),

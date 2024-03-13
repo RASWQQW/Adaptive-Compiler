@@ -3,8 +3,12 @@ using namespace std;
 
 
 
-double AddTwoNumbers(int[]a, int b){
-	return a + b;
+int** AddTwoNumbers(int a, int b){
+	
+	//return a + b;
+	int **add;
+	return add;
+
 }
 
 int main(){

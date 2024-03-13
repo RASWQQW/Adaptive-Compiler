@@ -51,3 +51,9 @@ type StrListStrChan struct {
 	Val1 string
 	Val2 chan []string
 }
+
+type ValType struct {
+	matrix bool "false" // any type with two dimensinal cover
+	array  bool "false" // any type with one array struct
+	simple bool "false" // any simple
+}

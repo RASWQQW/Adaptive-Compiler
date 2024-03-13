@@ -10,12 +10,12 @@ import (
 
 	//"math"
 
-	"ep/Execs/BotCompiler"
 	_ "ep/LevelFuncs"
 	"net/http"
 	"strings"
 
 	// Mainer "ep/web/Mainer"
+	mt "ep/Execs/methods"
 
 	baseCalls "ep/base/abst"
 
@@ -94,8 +94,12 @@ func main() {
 	// WebRunner()
 
 	//BotCompiler.CompilerRequester()
+	// BotCompiler.TimeLimitCompiler(1.1)
 
-	BotCompiler.TimeLimitCompiler(1.1)
+	// var userCode = "double AddTwoNumbers(int a, int b){return a + b;}"
+	// RunCode("cpp", userCode, "AddTwoNumbers")
+	fmt.Println(mt.FindMatrix("appler[12][4545]"))
+	fmt.Println(mt.GetLen("appler[12][12]"))
 }
 func WebRunner() {
 	Mainer.Runnersss()
