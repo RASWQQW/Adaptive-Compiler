@@ -15,7 +15,6 @@ import (
 	"strings"
 
 	// Mainer "ep/web/Mainer"
-	mt "ep/Execs/methods"
 
 	baseCalls "ep/base/abst"
 
@@ -98,8 +97,10 @@ func main() {
 
 	// var userCode = "double AddTwoNumbers(int a, int b){return a + b;}"
 	// RunCode("cpp", userCode, "AddTwoNumbers")
-	fmt.Println(mt.FindMatrix("appler[12][4545]"))
-	fmt.Println(mt.GetLen("appler[12][12]"))
+	// fmt.Println(mt.FindMatrix("appler[12][4545]"))
+	// fmt.Println(mt.GetLen("appler[12][12]"))
+	WebRunner()
+	//fmt.Println(LevelFuncs.ToString(mt.TypeGuesser(1, string("int"))))
 }
 func WebRunner() {
 	Mainer.Runnersss()

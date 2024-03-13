@@ -64,9 +64,10 @@ func CompilerRequester(Values map[string]any, RetVals chan []string) []string {
 	var regLink string = "https://api.jdoodle.com/v1/execute"
 	var clId string = "b86eafbab040cfd06f729b4f7d233f2d"
 	var cl_sec string = "85abad0125e7efdfeb9db2deb1b4155b919c65963deb43a0391ee6209cc71ba9"
-	getProf := reflect.ValueOf(Values["ProfileObj"])
 
-	if getProf.Kind().String() != "Profile" {
+	getProf := reflect.ValueOf(Values["ProfileObj"])
+	if reflect.TypeOf(Values["ProfileObj"]).Name() != "Profile" ||
+		getProf.Type().Name() != "Profile" { // CHECKS IN TWO WAY TO MAKE SURE OF HAVING PROFILE TYPE AND VALUE
 		panic("Given name of object is wrong typed which must be Profile instance")
 	}
 
@@ -93,6 +94,7 @@ func CompilerRequester(Values map[string]any, RetVals chan []string) []string {
 
 	fmt.Println("res before: ", rVal)
 	fmt.Println("StatCode: ", query.StatusCode)
+	fmt.Println("Compl Stat: '", rVal.CompilationStatus+`'`)
 	fmt.Println("Body: ", string(resbod))
 	//fmt.Println("res after: ", res)
 	//fmt.Println("Compiled Code: ", res["output"])
@@ -100,14 +102,16 @@ func CompilerRequester(Values map[string]any, RetVals chan []string) []string {
 	//fmt.Println("Response:", query.Request.Response)
 
 	if rVal.StatusCode == 200 {
-		if rVal.CompilationStatus == "1" {
+		//need of proper status indication and defining of it
+		if rVal.CompilationStatus == "" || len(rVal.CompilationStatus) == 0 || rVal.CompilationStatus == "1" || rVal.CompilationStatus == "null" || rVal.CompilationStatus == "0.00" {
+			fmt.Println("Vals inside:  " + rVal.Output)
 			RetVals <- []string{rVal.Output, ""}
 			return []string{rVal.Output, ""}
 		}
 	}
 
-	RetVals <- []string{rVal.Output, fmt.Sprintf("Error: %s", rVal.Output)}
-	return []string{rVal.Output, fmt.Sprintf("Error: %s", rVal.Output)}
+	RetVals <- []string{rVal.Output, fmt.Sprintf("Error: %s", "1")} //rVal.Output
+	return []string{rVal.Output, fmt.Sprintf("Error: %s", "1")}     //rVal.Output
 	// panic("Code is not proper")
 }
 

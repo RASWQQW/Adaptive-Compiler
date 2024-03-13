@@ -75,7 +75,8 @@ func ValIncr(cat string, val int) int {
 }
 
 func ExecTimeComp(GenTypes [][]string, RetType []string) float64 { //[0] param type [1] value
-	return 1
+	return 20 // default value
+	// make sure that i could generate enough relevant code
 }
 
 func ExecTimeLimiter(path string, execer func(string, chan []string) []string) []string {

@@ -178,7 +178,7 @@ func codeSaving(
 		go BotCompiler.TimeLimitCompiler(
 			GetTimeCalced,
 			vals.Val2,
-			map[string]any{"CommonPath": CommonPath, "ProfileObj": Profile, "filename": vals.Val2},
+			map[string]any{"CommonPath": CommonPath, "ProfileObj": *Profile, "filename": vals.Val1},
 			BotCompiler.CompilerRequester) //Profile
 	}
 	properCompRes := <-vvd2
@@ -297,9 +297,9 @@ func CompilingResult(
 						}
 
 					} else {
-						var GeneratedSingleValue string = LevelFuncs.ToString(mt.TypeGuesser(t, string(ParamType)))
+						var GeneratedSingleValue string = string(LevelFuncs.ToString(mt.TypeGuesser(t, string(ParamType))))
 						ParamBunch = append(ParamBunch, []string{ParamType, GeneratedSingleValue}) // adding to value collector
-						RandVal = fmt.Sprintf("%s %s = %d;", ParamType, name, GeneratedSingleValue)
+						RandVal = string(fmt.Sprintf("%s %s = %s;", ParamType, name, GeneratedSingleValue))
 					}
 					// here goes adding all inner parameters to put in a row line
 					DataTypes = DataTypes + RandVal + "\n"
