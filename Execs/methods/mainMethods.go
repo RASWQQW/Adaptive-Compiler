@@ -5,9 +5,10 @@ import (
 	"math/rand"
 	"regexp"
 	re "regexp"
-	"slices"
 	"strconv"
 	"strings"
+
+	"golang.org/x/exp/slices"
 )
 
 func Aligner(UserCode string) (string, string) {

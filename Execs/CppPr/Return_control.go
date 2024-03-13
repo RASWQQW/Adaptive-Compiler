@@ -12,11 +12,11 @@ import (
 // AND CREATE PRINTER OF RESULT AFTER GETTING OF FUNC  RESULT IF RET VALUE ARRAY OR MATRIX
 
 func main(lang string, valueType *vals.ValType) {
-	var cycleCode map[string]string = map[string]string{
-		"cpp":    "",
-		"java":   "",
-		"csharp": "",
-	}
+	// var cycleCode map[string]string = map[string]string{
+	// 	"cpp":    "",
+	// 	"java":   "",
+	// 	"csharp": "",
+	// }
 }
 
 // THE CODE TO DYNAMICALLY  DETERMAINE AND REWRITE IF FUNC CALL NEED TO PRINTED
@@ -75,11 +75,9 @@ func cpp_control(ReturnDType string) []string {
 	//var CostumCode string = ""
 	//var CodeToRun string = MainCode + "\n" + Functions
 	if len(mt.FindMatrix(ReturnDType)) > 0 {
-		ddArrayCode[1] = Functions + ddArrayCode[1]
-		return ddArrayCode
+		return []string{ddArrayCode[0], Functions + ddArrayCode[1]}
 	} else if len(mt.FindList(ReturnDType)) > 0 {
-		dArrayCode[1] = Functions + dArrayCode[1]
-		return dArrayCode
+		return []string{dArrayCode[0], Functions + dArrayCode[1]}
 	}
 	return []string{"-1"}
 }

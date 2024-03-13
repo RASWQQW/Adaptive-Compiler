@@ -74,7 +74,7 @@ func ValIncr(cat string, val int) int {
 	return 12
 }
 
-func ExecTimeComp(GenTypes [][]string, RetType [][]string) float64 { //[0] param type [1] value
+func ExecTimeComp(GenTypes [][]string, RetType []string) float64 { //[0] param type [1] value
 	return 1
 }
 

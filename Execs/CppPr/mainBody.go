@@ -155,7 +155,7 @@ func codeSaving(
 	// here goes saving a two proper and user func code each other
 	// its a code from user
 	var Profile = compil.SaveProfile(LoCode, ProperBaseCode, LANG_G, Ncounter)
-	var GetTimeCalced float64 = mt.ExecTimeComp(CodeVals, GRetType)
+	var GetTimeCalced float64 = mt.ExecTimeComp(CodeVals, GRetFunc)
 	var CommonPath string = path + "\\ParalelVaries"
 
 	// IT MAKES MORE SENSE ADDING BEFORE SO ALL OFF CREATED OR DOES NOT, CAN BE COUNTED
