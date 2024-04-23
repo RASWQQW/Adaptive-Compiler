@@ -57,3 +57,25 @@ type ValType struct {
 	array  bool "false" // any type with one array struct
 	simple bool "false" // any simple
 }
+
+type Profile struct {
+	Name        string
+	UserCName   string
+	ProperCName string
+	Lang        string
+}
+
+type BatchGatherer struct {
+	CllCodeParams string
+	CllUserCode   string
+	CllProperCode string
+	CllReturns    chan string
+	CllProfile    *Profile
+	CllParamType  int // type of i/o based type 1 -> simple, 2 -> array,  3 ->  matrix
+}
+
+type BatchGathererList struct {
+	Collection           []*BatchGatherer
+	CllRepresentString   string
+	CllTypePassingString string
+}

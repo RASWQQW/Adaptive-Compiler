@@ -14,13 +14,6 @@ import (
 
 var PATHG, _ = os.Getwd()
 
-type Profile struct {
-	Name        string
-	UserCName   string
-	ProperCName string
-	Lang        string
-}
-
 func FileCodeGenerator(TaskPeriod int) (NCode string) {
 	NCode = lv.ToString(10000+rand.Int63()+rand.Int63()) + lv.ToString(TaskPeriod) + "TP"
 	rr, _ := os.ReadDir(PATHG + "\\comps\\cpp\\ParalelVaries")
@@ -38,15 +31,17 @@ func FileCodeGenerator(TaskPeriod int) (NCode string) {
 
 // profile contains prop and user code files
 // and spec code to interact with
-func SaveProfile(UserCode string, ProperCode string, lang string, tp chan int) *Profile {
+func SaveProfile(lang string, tp chan int) *lv.Profile {
 	var counter int = <-tp
 	counter = counter + 1
 	// tp increase id to not get same value in same time
 	var getName string = lang + FileCodeGenerator(counter)
-	os.Mkdir(PATHG+"\\comps\\cpp\\ParalelVaries\\"+getName, os.ModePerm)
-	var nP *Profile = &Profile{Name: getName, UserCName: getName + "_User.cpp", ProperCName: getName + "_Proper.cpp", Lang: lang}
+	var nP *lv.Profile = &lv.Profile{Name: getName, UserCName: getName + "_User.cpp", ProperCName: getName + "_Proper.cpp", Lang: lang}
 	tp <- counter
 	return nP
+}
+func CreateFileProfile(getName string) {
+	os.Mkdir(PATHG+"\\comps\\cpp\\ParalelVaries\\"+getName, os.ModePerm)
 }
 
 // func CreateProfile()

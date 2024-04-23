@@ -42,34 +42,42 @@ func cpp_control(ReturnDType string) []string {
 		"DArrayChecker", // header
 		//body
 		`template <typename T, int W>
-	void DArrayChecker(T vals[W]){
+		string DArrayChecker(T vals[W]){
+		string Printer = "";
 		for(int v = 0; v < sizeof vals / sizeof vals[0]; v++){
 			// Only prints types with single value
 			if(!TypeHandler(vals[v])){
-				cout << vals[v] << " ";
+				Printer = Printer +  vals[v] + " ";
 			}
 		}
-	}
-	`}
+		return Printer;
+	}`}
 
 	//<type1|>int vals[3][2] = {{1, 2}, {3, 4}, {5, 6}};<type1|>
 	var ddArrayCode []string = []string{
 		"DDArrayChecker", // header
 		// body
 		`template <typename T, int W, int H>
-	void DDArrayChecker(T vals[W][H]){
+		void DDArrayChecker(T vals[W][H]){
+		string Printer = "";
 		for(int v = 0; v < sizeof vals / sizeof vals[0]; v++){
 			if(TypeHandler(vals[v])
 				){ // END FROM HERE TO MAKE SOME SENSE TO CREATE IDEAL SORTING ON TYPE RECOGNITION
-				for(int v2 = 0; v2 < sizeof vals[v] / sizeof *(*(vals + v) + v2); v2++){
-					//*(*(vals2 + v) + v2) = vals[v][v2];
-					cout << vals[v][v2] << " ";
+					for(int v2 = 0; v2 < sizeof vals[v] / sizeof *(*(vals + v) + v2); v2++){
+						//*(*(vals2 + v) + v2) = vals[v][v2];
+						Printer = Printer + vals[v][v2] + " ";
+					}
+					Printer = Printer + "\n";
 				}
-				cout <<  endl;
 			}
-		}
-	}
-	`}
+		}`}
+
+	var SimpleValue []string = []string{
+		"SimplePrinter",
+		`template<typename T>
+		void Printer(T PrintType){
+			return to_string(PrintType);
+		}`}
 
 	//var ChangeArgs map[string]string = map[string]string{"type1": ReturnDType}
 	//var CostumCode string = ""
@@ -78,6 +86,9 @@ func cpp_control(ReturnDType string) []string {
 		return []string{ddArrayCode[0], Functions + ddArrayCode[1]}
 	} else if len(mt.FindList(ReturnDType)) > 0 {
 		return []string{dArrayCode[0], Functions + dArrayCode[1]}
+	} else {
+		return []string{SimpleValue[0], Functions + SimpleValue[1]}
+
 	}
 	return []string{"-1"}
 }

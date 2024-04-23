@@ -25,12 +25,6 @@ func Checker1(vow chan string) {
 		time.Sleep(time.Second * 1)
 		vow <- "text1"
 		vow <- "text2"
-		// time.Sleep(time.Second)
-		// if dd2 := <-vow; dd2 == "Text" {
-		// 	vow <- "Text2"
-		// } else {
-		// 	vow <- "Text"
-		// }
 	}
 }
 func Checker2(dd chan string) {

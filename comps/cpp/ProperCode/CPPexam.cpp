@@ -3,15 +3,15 @@ using namespace std;
 #include <string>
 #include <format>
 
+
 double AddTwoNumbers(int a, int b){return a + b; }
 
 template <class T>
 bool TypeHandler(const T &TypeChecker);
 
-void ArrayPrinter(int vals[3][2], int size, int** vals2){
+int** ArrayPrinter(int vals[3][2], int size, int** vals2){
     int a = 8;
     int b = 10;
-
 
     for(int s = 0; s < 3; s = s + 1){
         cout << vals2[s] << endl;
@@ -81,8 +81,8 @@ void Printer(T value[W][H]){
 }
 
 int main(){
-    string sa[1][1]{{"2"}};
-    Printer<string, 1, 1>(sa);
+    string sa[1][2]{{"2", "3"}};
+    Printer<string, 1, 2>(sa);
     //cout << typeid(type1).name() << ",, " << format("{}", typeid(type2).name()) == typeid(type2).name() << endl;
     return 0;	
 

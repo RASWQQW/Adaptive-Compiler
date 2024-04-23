@@ -8,13 +8,54 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"strconv"
+	"strings"
 	"time"
+	"unicode"
 )
 
 var envMainPath, _ = os.Getwd()
 
+func TypeComplexityCalc(Params []string, is_right_numb bool) float32 {
+	var regComp = regexp.MustCompile("(\\[\\d*\\])+")
+	var rgs *regexp.Regexp = regexp.MustCompile("\\d+")
+	var typeComplixity float32 = 0
+	for _, paramType := range Params {
+		var counts []string = regComp.FindAllString(paramType, 1)
+
+		// For counting amount thickness of type if it's array
+		var matchs = rgs.FindAllString(paramType, -1)
+		var SizeThick float32 = 1 // it at least returns 1 value cause it have its type even if it not defiend
+		if len(matchs) > 0 {
+			gotterd, _ := strconv.Atoi(matchs[0])
+			SizeThick = float32(gotterd)
+			for tm := 1; tm < len(matchs); tm++ {
+				conv, _ := strconv.Atoi(matchs[tm])
+				if is_right_numb {
+					SizeThick = SizeThick * float32(float32(conv/100)*25)
+				} else {
+					SizeThick = SizeThick * float32(float32(conv)*0.0125)
+				}
+			}
+		}
+
+		var lls map[string]float32 = map[string]float32{"string": 1.12, "int": 1.12, "double": 1.25, "float": 1.15, "char": 0.5}
+		for llsd, ls := range lls {
+			if strings.Contains(paramType, llsd) {
+				SizeThick = SizeThick * float32(ls)
+			}
+		}
+		typeComplixity = typeComplixity + float32(len(counts)) + SizeThick // + 1 there is no way of adding just one [number]
+	}
+	return typeComplixity
+}
+
 func StepGiving(task_id int, MainParams []string, MainParamsTypes []string) int {
 	// Step giving determines whether func have to checked long or short
+
+	// if 1 == 1 {
+	// 	return 21
+	// }
 
 	var getCodeParamTypes []string
 	if task_id >= 0 {
@@ -27,15 +68,7 @@ func StepGiving(task_id int, MainParams []string, MainParamsTypes []string) int 
 		getCodeParamTypes = MainParamsTypes
 	}
 
-	var regComp = regexp.MustCompile("(\\[\\d*\\])+")
-
-	var typeComplixity int = 0
-	for _, paramType := range getCodeParamTypes {
-		var counts []string = regComp.FindAllString(paramType, -1)
-		typeComplixity = typeComplixity + (len(counts)) // + 1 there is no way of adding just one [number]
-	}
-
-	typeComplixity = len(MainParams) * typeComplixity
+	var typeComplixity int = len(MainParams) * int(TypeComplexityCalc(getCodeParamTypes, true)) // it sort of multipling to own count one time to increase type's complixity by one time
 	var from int = 25
 	var to int = 95 // in reality it goes to "to" + "from" `400`
 
@@ -74,8 +107,48 @@ func ValIncr(cat string, val int) int {
 	return 12
 }
 
-func ExecTimeComp(GenTypes [][]string, RetType []string) float64 { //[0] param type [1] value
-	return 20 // default value
+// KEY WORDS TO REFACTOR: DICT
+// THE CALCULER NOT CONSIDERS CALCULATING A DICT VALUES BUT TO TIME ARRAY AND OTHER VALUES
+func ExecTimeComp(GenTypes [][]string, RetType []string) float32 { //[0] param type [1] value
+	//return 20 // default value
+
+	// if 1 == 1 {
+	// 	return 21
+	// }
+
+	var TypesExt []string = []string{}
+	var ValuesExt []string = []string{}
+	var ValuesComplexity float32
+
+	for s := 0; s < len(GenTypes); s++ {
+		TypesExt = append(TypesExt, GenTypes[s][0])
+		ValuesExt = append(ValuesExt, GenTypes[s][1])
+	}
+	for point, val := range ValuesExt {
+		var OverAllCom float32 = 0
+		val = strings.Replace(
+			strings.Replace(
+				strings.Replace(
+					strings.Replace(val, " ", "", -1),
+					"[", "", -1),
+				"]", "", -1),
+			"'", "", -1) // for strings
+		// removes off blanks list of things: [, ]
+
+		for _, valCut := range strings.Split(val, ",") {
+			if len(valCut) > 0 {
+				if unicode.IsDigit(rune(valCut[0])) && !strings.Contains(TypesExt[point], "string") { //further have to elobrate when there will be DICT // sort of speaking a char like value
+					// the points each tenth of number have 8 mult time affect
+					OverAllCom = float32(float32(float32(len(strings.Replace(valCut, ".", "", -1))*8)/1000) * 30) // 8 byte is minimal size of int // to get rid of point values
+				} else {
+					OverAllCom = float32(float32(float32(len(valCut)*4)/1000) * 40) // 4 byte is minimal size of string
+				}
+			}
+			ValuesComplexity = ValuesComplexity + OverAllCom
+		}
+	}
+	var TotalTime float32 = 0.335 * float32(ValuesComplexity) * float32(TypeComplexityCalc(TypesExt, false)+((TypeComplexityCalc(RetType, false)/100)*33))
+	return TotalTime
 	// make sure that i could generate enough relevant code
 }
 

@@ -11,11 +11,13 @@ import (
 	"encoding/json"
 	"ep/LevelFuncs"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -45,7 +47,7 @@ type ReadVals struct {
 
 // complete this code to run vals
 func TimeLimitCompiler(
-	sleepTime float64,
+	sleepTime float32,
 	ReturnValue chan []string,
 	params map[string]any,
 	RunFunc func(map[string]any, chan []string) []string) {
@@ -59,11 +61,87 @@ func TimeLimitCompiler(
 	ReturnValue <- []string{"Time limit exceeded", "TIMELIMIT", "1"}
 }
 
-func CompilerRequester(Values map[string]any, RetVals chan []string) []string {
+// The idea is making possible of running custom codes with their id of file
+// whether is user or proper code on one compile request
+// and getting all results by specification
+// func CodeBatcher(gatherer *LevelFuncs.BatchGathererList, stat string) { //(addCode string, headers string) {
+// 	var CompileCode string = stat + ` `
+// 	var FuncRunnerInj string = `` //  I have sitten code of thread running of given funcs
 
-	var regLink string = "https://api.jdoodle.com/v1/execute"
+// 	//There Have to bes passed list of
+
+// 	var returnType string = ``
+// 	var passingParamsTypes string = ``
+// 	var FuncNamesLists string = `list<` + returnType + `(*)(` + passingParamsTypes + `)> RUNNFUNCS {`
+
+// 	var FuncsDeclaring string = ``
+// 	var FuncsRunList []string = []string{} // there i have to show funcs list syntax
+// 	var funcCreate = func(name string, funcCode string) {
+// 		var FuncsDeclaringFunc = func() {}
+// 		FuncsDeclaring = FuncsDeclaring + "\n\n" + funcCode[:strings.Index(funcCode, " ")-1] + name + funcCode[strings.Index(funcCode, "("):]
+// 		FuncsRunList = append(FuncsRunList, fmt.Sprintf(gatherer.CllRepresentString, name, gatherer.CllTypePassingString))
+// 	}
+
+// 	FuncNamesLists + strings.Join(FuncsRunList, ", ") + "};"
+// 	for vv := 0; vv < len(gatherer.Collection); vv = vv + 1 {
+// 		var nname string = gatherer.Collection[vv].CllProfile.Name
+// 		funcCreate(nname+"ProperBased", gatherer.Collection[vv].CllProperCode)
+// 		funcCreate(nname+"UserBased", gatherer.Collection[vv].CllUserCode)
+// 	}
+
+// }
+
+func GetBoardData(username string) int {
+	var regStr string = "https://api.twitch.tv/helix/users?login=" + username
 	var clId string = "b86eafbab040cfd06f729b4f7d233f2d"
-	var cl_sec string = "85abad0125e7efdfeb9db2deb1b4155b919c65963deb43a0391ee6209cc71ba9"
+	var Result string = ""
+	req, _ := http.NewRequest("POST", regStr, nil)
+	req.Header.Set("Client-ID", clId)
+	req.Header.Set("Content-Type", "application/json")
+
+	var cl *http.Client = &http.Client{}
+	res, _ := cl.Do(req)
+	red, _ := io.ReadAll(res.Body)
+
+	//getting headers
+	for key, val := range res.Header {
+		fmt.Println("Key " + string(key) + "Val: " + string(val[0]))
+		if key == "X-RateLimit-Remaining" {
+			Result = val[0]
+		}
+	}
+	// printing body
+	fmt.Println(string(red))
+	resd, _ := strconv.Atoi(Result)
+	return resd
+}
+
+func CompilerRequester(Values map[string]any, RetVals chan []string) []string {
+	var regLink string = "https://api.jdoodle.com/v1/execute"
+	var clId string = ""   //"b86eafbab040cfd06f729b4f7d233f2d"
+	var cl_sec string = "" //"85abad0125e7efdfeb9db2deb1b4155b919c65963deb43a0391ee6209cc71ba9"
+
+	read__c, errs := os.ReadFile("C:\\Users\\rasul\\Documents\\PROJECTS\\GOPROJECT\\Execs\\BotCompiler\\conf.json") //(MAINPATH + "\\Exces\\BotCompiler\\conf.json")
+	if errs != nil {
+		panic(errs)
+	}
+	var Creds []map[string]string
+	json.Unmarshal(read__c, &Creds)
+
+	clId = Creds[1]["ClientId"]
+	cl_sec = Creds[1]["ClientSecret"]
+
+	// for _, contains := range Creds {
+	// 	if GetBoardData(contains["UserName"]) < 200 {
+	// 		clId = Creds[1]["ClientId"]
+	// 		cl_sec = Creds[1]["ClientSecret"]
+	// 		break
+	// 	}
+	// }
+	if len(clId) < 1 {
+		RetVals <- []string{"-105"}
+		return []string{"-105"}
+	}
 
 	getProf := reflect.ValueOf(Values["ProfileObj"])
 	if reflect.TypeOf(Values["ProfileObj"]).Name() != "Profile" ||
@@ -77,7 +155,7 @@ func CompilerRequester(Values map[string]any, RetVals chan []string) []string {
 	regJs := map[string]string{
 		"clientId":     clId,
 		"clientSecret": cl_sec,
-		"script":       ReadAndPassString, //"using namespace std; \n#include <iostream> \n\nint main() {cout << \"Apple is sweet!\" << endl; return 0; }", //"std::cout<< 'Apple is sweet';",
+		"script":       ReadAndPassString, //"using namespace std; \n#include <iostream> \n\nint main() {std::cout << \"Apple is sweet!\" << endl; return 0; }", //"std::cout<< 'Apple is sweet';",
 		"language":     "cpp"}
 
 	regJsString, _ := json.Marshal(regJs)
@@ -142,4 +220,52 @@ func Junk() {
 	defer query.Body.Close()
 	var res map[any]any
 	json.NewDecoder(query.Body).Decode(&res)
+}
+
+func WebSocketRunner(params map[string]any, returnValue chan []string) []string /*get 0 resul, 1 status */ {
+	var lang string = LevelFuncs.ToString(params["lang"])
+	var code string = LevelFuncs.ToString(params["code"])
+	if len(lang) < 1 {
+		lang = "cpp"
+	}
+	if len(code) < 1 {
+		code = `#include <iostream>\n\nusing namespace std;\n\nint main()\n{\n   std::cout << "ssHello World" << endl << \"Checker Part \tTab check\"; \n   \n   return 0;\n}`
+	}
+
+	var cc int = 5 // amount of socket outputs varies
+	var string_gatherer_ []string = []string{}
+	var outv_ = make(chan string, cc)
+	var inv_ = make(chan string, 1)
+	// THERE HAVE TO CHECKED THE FORMAT OF THE CODE ESPESSILY HOW IT LOOKS FROM
+	// STRING LOOKING POINT
+
+	inv_ <- strconv.Quote(code)
+	InitWebsocketClient(cc, lang, outv_, inv_, false, false)
+	for v := 0; v < cc; v = v + 1 {
+		select {
+		case out_tuck := <-outv_:
+			string_gatherer_ = append(string_gatherer_, out_tuck)
+			fmt.Println("OutPut:" + string_gatherer_[v])
+			if strings.Contains(string_gatherer_[v], "ERROR_POINT") {
+				returnValue <- []string{string_gatherer_[v][len("ERROR_POINT>"):], "-107"}
+				return []string{}
+			} else if strings.Contains(string_gatherer_[v], `"output"`) {
+				var strdd string = strings.Split(string_gatherer_[v], "[")[1]          // removes all [] list thing
+				strdd = strings.Split(strings.Trim(strdd[:len(strdd)-1], " "), ",")[1] // and catches exact code return part from list
+				strdd, _ = strconv.Unquote(strdd)
+				if len(strdd) > 0 {
+					fmt.Println("Out code(CONVERTED PROPER TO CHECK VERSION)>>")
+					fmt.Println(strdd)
+					returnValue <- []string{strdd, "RES"}
+					return []string{}
+
+				}
+			}
+		default:
+			break
+		}
+	}
+	returnValue <- []string{"malfunctioning	", "-106"} // the online compiler unsucces code
+	return []string{}
+
 }

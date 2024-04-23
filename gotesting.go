@@ -55,5 +55,5 @@ func SaveFileTest() {
 	if err != nil {
 		panic(err)
 	}
-	wr.WriteString(`int main(){std::cout << "I am god mf";}`)
+	wr.WriteString(`int main(){std::std::cout << "I am god mf";}`)
 }

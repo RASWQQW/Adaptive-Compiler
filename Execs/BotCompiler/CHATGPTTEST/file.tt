@@ -1,0 +1,79 @@
+package ONLTester
+
+import (
+	"bufio"
+	"fmt"
+	"net/http"
+	"os"
+
+	"github.com/gorilla/websocket"
+)
+
+// var address string = "wss://cpp.repl-web.programiz.com/socket.io/?sessionId=YrNOQVqNZv&lang=cpp&EIO=3&transport=websocket"
+var address string = "wss://cpp.repl-web.programiz.com/socket.io/?sessionId=o95rX9lIJv&lang=cpp&EIO=3&transport=websocket"
+var UserAgent string = "wss://cpp.repl-web.programiz.com/socket.io/?sessionId=xgLvqMeUds&lang=cpp&EIO=3&transport=websocket"
+
+func InitWebsocketClient() {
+	fmt.Println("Starting Client")
+
+	var GivenHeader http.Header = http.Header{}
+	GivenHeader.Add("User-Agent", UserAgent)
+	GivenHeader.Add("Host", "cpp.repl-web.programiz.com")
+	//GivenHeader.Add("Sec-WebSocket-Key", "IdZCJgyc19fy9soaeuiIWA==")
+
+	conn, resp, err := websocket.DefaultDialer.Dial(address, GivenHeader)
+
+	if resp != nil && resp.Header != nil {
+		getHeader := resp.Header
+
+		fmt.Println("Resonse>>")
+		for key, val := range getHeader {
+			fmt.Println(">>")
+			fmt.Println(key)
+			fmt.Println(">>")
+			fmt.Println(val)
+
+		}
+	}
+
+	if err != nil {
+		fmt.Println("dial Error:", err)
+	}
+	defer conn.Close()
+	var done = make(chan string)
+
+	go func() {
+		defer close(done)
+		for {
+			mt, message, err := conn.ReadMessage()
+			if err != nil {
+				fmt.Println("Gotten Error:", err)
+				return
+			}
+			fmt.Println("size: %s, message: %s", mt, string(message))
+		}
+	}()
+
+	for {
+		select {
+		case <-done:
+			return
+		default:
+			fmt.Println("Write a code: ")
+
+			fmt.Println("Write a code: ")
+			reader := bufio.NewReader(os.Stdin)
+			code, _ := reader.ReadString('\n')
+			fmt.Println("Given code", code)
+
+			var SentArray string = `42["run", {"code": ` + code + `}]`
+			err := conn.WriteMessage(websocket.TextMessage, []byte(SentArray))
+
+			if err != nil {
+				fmt.Println("Error when  giving value :", err)
+				return
+			}
+		}
+
+	}
+}

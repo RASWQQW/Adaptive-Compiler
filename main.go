@@ -9,13 +9,14 @@ import (
 	"ep/web/Mainer"
 
 	//"math"
-
+	chtest "ep/Execs/BotCompiler"
 	_ "ep/LevelFuncs"
 	"net/http"
 	"strings"
 
 	// Mainer "ep/web/Mainer"
 
+	CodeGenerator "ep/Execs/GENERATE_TASKS"
 	baseCalls "ep/base/abst"
 
 	// obj "ep/inputing/obj"
@@ -99,8 +100,67 @@ func main() {
 	// RunCode("cpp", userCode, "AddTwoNumbers")
 	// fmt.Println(mt.FindMatrix("appler[12][4545]"))
 	// fmt.Println(mt.GetLen("appler[12][12]"))
-	WebRunner()
+	// WebRunner()
+
+	// fmt.Println("Write a code: ")
+	// reader := bufio.NewReader(os.Stdin)
+	// line, _ := reader.ReadString('\n')
+	// var sum int = 0
+	// str := make(chan int, 3)
+	// go func() {
+	// 	for v := 0; v < 3; v = v + 1 {
+	// 		fmt.Println("cc::")
+	// 		fmt.Println(len(str))
+	// 		sum = sum + len(str)
+	// 		fmt.Println(<-str)
+	// 	}
+	// }()
+	// str <- 1
+	// time.Sleep(time.Second)
+	// str <- 2
+	// time.Sleep(time.Second * 2)
+	// str <- 3
+	// time.Sleep(time.Second * 1)
+	// fmt.Println(sum)
+
+	// fmt.Println("Given code", line)
+	// WebSocketRunner()
+	// Checkerss()
+	// fmt.Println(unicode.IsDigit(rune('1')))
+	// var regComp = regexp.MustCompile("(\\[\\d*\\])+")
+	// fmt.Println(regComp.FindAllString("[43532][324]", -1))
 	//fmt.Println(LevelFuncs.ToString(mt.TypeGuesser(1, string("int"))))
+	// fmt.Println(chtest.GetSessionId("cpp"))
+
+	// WebRunner()
+	var userCode = "double AddTwoNumbers(int a, int b){return a + b;}"
+	RunCode("cpp", userCode, "AddTwoNumbers")
+
+	// fmt.Println(
+	// 	strconv.Quote(`int main(){std::cout << "CODEER"
+
+	// 	}`), 'b'>>1, byte('c'))
+	// CodeRunner()
+	// var gb baseCalls.BaseConnection = baseCalls.GetBase()
+	// var collects *obj.Career = &obj.Career{INOUTS: map[string]any{"task_name_id": "AddTwoNumbers", "lang": "cpp"}, OUTS: map[string]any{}}
+	// //collector = append(collector, taskIdCar)
+	// gb.GetTaskByName(collects)
+	// gb.GetFuncParams(collects)
+	// fmt.Println("Vals ", collects.OUTS["args"])
+	//fmt.Println("Checker: ")
+	//{"string", `'5436546436trdhgfhgfhd'`}, {"string", `'checker'`}, {"int", "12"}
+	//fmt.Println("Checker2: ", methods.ExecTimeComp([][]string{{"string[3][11]", `{{"2","2", "2", "2", "2", "2","2","2","2","1", "2", "2", "2", "2",}}`}}, []string{"string"}))
+	// var CheckerText string = "%s%s"
+	// var CheckerTwo string = fmt.Sprintf("Apple%s", CheckerText, "Txt2", "Txt3")
+	// fmt.Println(CheckerTwo)
+}
+func CodeRunner() {
+	CodeGenerator.Checker()
+}
+
+func WebSocketRunners() {
+	vad := chtest.WebSocketRunner //("", "")
+	fmt.Println(vad)
 }
 func WebRunner() {
 	Mainer.Runnersss()

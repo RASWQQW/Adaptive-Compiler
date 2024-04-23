@@ -59,9 +59,11 @@ func Aligner(UserCode string) (string, string) {
 		}
 	}
 
-	//make sure that code main strokes are the fits standarts
+	//make sure that code main strokes are fits the standarts
 	var stringer []string = strings.Split(UserCode, "")
-	stringer[strings.Index(UserCode, "(")-1] = ""
+	if stringer[strings.Index(UserCode, "(")-1] == " " {
+		stringer[strings.Index(UserCode, "(")-1] = ""
+	}
 	UserCode = strings.Join(stringer, "")
 
 	fmt.Println("Aligned code: ", newCode)
@@ -110,7 +112,7 @@ func GetLen(comp string) []string {
 func GetFullType(ValueName string, paramtype string, paramlen []string) string {
 	var params string
 	for _, val := range paramlen {
-		params = params + fmt.Sprintf("[%s]", val)
+		params = fmt.Sprintf("[%s]", val) + params
 	}
 	return paramtype + fmt.Sprintf(" %s%s", ValueName, params)
 }
