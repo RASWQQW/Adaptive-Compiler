@@ -66,16 +66,20 @@ type Profile struct {
 }
 
 type BatchGatherer struct {
-	CllCodeParams string
-	CllUserCode   string
-	CllProperCode string
-	CllReturns    chan string
-	CllProfile    *Profile
-	CllParamType  int // type of i/o based type 1 -> simple, 2 -> array,  3 ->  matrix
+	ParamTimeLimitToRun float32
+	ParamBuncher        [][3]string
+	CllCodeParams       string
+	CllUserCode         string
+	CllProperCode       string
+	CllReturns          chan string
+	CllProfile          *Profile
+	CllParamType        int // type of i/o based type 1 -> simple, 2 -> array,  3 ->  matrix
 }
 
 type BatchGathererList struct {
-	Collection           []*BatchGatherer
-	CllRepresentString   string
-	CllTypePassingString string
+	Collection             []*BatchGatherer
+	CllRepresentString     []string // rep string is given and i can make some funcs to be gotten in order
+	CllTypePassingString   string
+	FuncParamNamesAndTypes [][]string
+	FuncReturnType         string
 }

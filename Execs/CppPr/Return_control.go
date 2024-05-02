@@ -5,6 +5,8 @@ package inputing
 import (
 	mt "ep/Execs/methods"
 	vals "ep/LevelFuncs"
+	"fmt"
+	"strings"
 )
 
 // HAVE TO FULLY CHECK THAT RETURN VALUE CHECK TO WORK FOR 100% PERCENT
@@ -21,7 +23,7 @@ func main(lang string, valueType *vals.ValType) {
 
 // THE CODE TO DYNAMICALLY  DETERMAINE AND REWRITE IF FUNC CALL NEED TO PRINTED
 // OR JUST CALLED TO GET RESULT OR PRINTED TO GET SINGLE RETURN VALUE
-func cpp_control(ReturnDType string) []string {
+func Cpp_control(FuncRetType string, compilerType int) []string { //FuncRetType may differ from  {int } to {flaot, 12, 12 }
 
 	/*var MainCode string = `
 		using namespace std;
@@ -38,9 +40,19 @@ func cpp_control(ReturnDType string) []string {
 	}`
 
 	// <|>int vals[3] = {1, 2, 3};<|>
-	var dArrayCode []string = []string{
+	var dArrayCode [3]string = [3]string{
 		"DArrayChecker", // header
 		//body
+		`template <typename T, int W>
+		void DArrayChecker(T vals[W]){
+		string Printer = "";
+		for(int v = 0; v < sizeof vals / sizeof vals[0]; v++){
+			// Only prints types with single value
+			if(!TypeHandler(vals[v])){
+				cout << vals[v] + " ";
+			}
+		}
+	}`,
 		`template <typename T, int W>
 		string DArrayChecker(T vals[W]){
 		string Printer = "";
@@ -54,11 +66,25 @@ func cpp_control(ReturnDType string) []string {
 	}`}
 
 	//<type1|>int vals[3][2] = {{1, 2}, {3, 4}, {5, 6}};<type1|>
-	var ddArrayCode []string = []string{
+	var ddArrayCode [3]string = [3]string{
 		"DDArrayChecker", // header
 		// body
 		`template <typename T, int W, int H>
 		void DDArrayChecker(T vals[W][H]){
+		string Printer = "";
+		for(int v = 0; v < sizeof vals / sizeof vals[0]; v++){
+			if(TypeHandler(vals[v])
+				){ // END FROM HERE TO MAKE SOME SENSE TO CREATE IDEAL SORTING ON TYPE RECOGNITION
+					for(int v2 = 0; v2 < sizeof vals[v] / sizeof *(*(vals + v) + v2); v2++){
+						//*(*(vals2 + v) + v2) = vals[v][v2];
+						cout << vals[v][v2] + " ";
+					}
+					cout << "\n";
+				}
+			}
+		}`,
+		`template <typename T, int W, int H>
+		string DDArrayChecker(T vals[W][H]){
 		string Printer = "";
 		for(int v = 0; v < sizeof vals / sizeof vals[0]; v++){
 			if(TypeHandler(vals[v])
@@ -70,24 +96,32 @@ func cpp_control(ReturnDType string) []string {
 					Printer = Printer + "\n";
 				}
 			}
-		}`}
+			return Printer;
+			}`}
 
-	var SimpleValue []string = []string{
-		"SimplePrinter",
+	var SimpleValue [3]string = [3]string{
+		"Printer",
 		`template<typename T>
 		void Printer(T PrintType){
+			cout << to_string(PrintType);
+		}`,
+		`template<typename T>
+		string Printer(T PrintType){
 			return to_string(PrintType);
 		}`}
 
 	//var ChangeArgs map[string]string = map[string]string{"type1": ReturnDType}
 	//var CostumCode string = ""
 	//var CodeToRun string = MainCode + "\n" + Functions
-	if len(mt.FindMatrix(ReturnDType)) > 0 {
-		return []string{ddArrayCode[0], Functions + ddArrayCode[1]}
-	} else if len(mt.FindList(ReturnDType)) > 0 {
-		return []string{dArrayCode[0], Functions + dArrayCode[1]}
+	FuncRetType = strings.ReplaceAll(FuncRetType, "[]", "[50]") // if there are empty valuus just fill
+	var forDeal string = strings.ReplaceAll(strings.ReplaceAll(strings.Join(strings.Split(FuncRetType, "]["), ", "), "[", ""), "]", "")
+
+	if len(mt.FindMatrix(FuncRetType)) > 0 {
+		return []string{fmt.Sprintf("%s<%s>", ddArrayCode[compilerType], forDeal), Functions + "\n\n" + ddArrayCode[1]}
+	} else if len(mt.FindList(FuncRetType)) > 0 {
+		return []string{fmt.Sprintf("%s<%s>", dArrayCode[compilerType], forDeal), Functions + "\n\n" + dArrayCode[1]}
 	} else {
-		return []string{SimpleValue[0], Functions + SimpleValue[1]}
+		return []string{fmt.Sprintf("%s<%s>", SimpleValue[compilerType], forDeal), Functions + "\n\n" + SimpleValue[1]}
 
 	}
 	return []string{"-1"}

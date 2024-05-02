@@ -6,11 +6,15 @@ import (
 
 	"encoding/json"
 	inputing "ep/Execs"
+	inputed "ep/Execs/CppPr"
+	"ep/Execs/obj"
+
 	"ep/web/Mainer"
 
 	//"math"
 	chtest "ep/Execs/BotCompiler"
-	_ "ep/LevelFuncs"
+
+	lvl "ep/LevelFuncs"
 	"net/http"
 	"strings"
 
@@ -18,6 +22,7 @@ import (
 
 	CodeGenerator "ep/Execs/GENERATE_TASKS"
 	baseCalls "ep/base/abst"
+	bs "ep/base/abst"
 
 	// obj "ep/inputing/obj"
 
@@ -154,8 +159,41 @@ func main() {
 	// var CheckerTwo string = fmt.Sprintf("Apple%s", CheckerText, "Txt2", "Txt3")
 	// fmt.Println(CheckerTwo)
 }
+
 func CodeRunner() {
-	CodeGenerator.Checker()
+	CodeGenerator.Checker("", "")
+}
+
+func CppCodeCreator() {
+
+	var gb bs.BaseConnection = bs.GetBase()
+	var checker *lvl.BatchGathererList = new(lvl.BatchGathererList)
+
+	var collects *obj.Career = &obj.Career{INOUTS: map[string]any{"task_name_id": "AddTwoNumbers", "lang": "cpp"}, OUTS: map[string]any{}}
+	//collector = append(collector, taskIdCar)
+	gb.GetTaskByName(collects)
+	gb.GetFuncParams(collects)
+
+	checker.CllRepresentString = inputed.Cpp_control("")
+	checker.CllTypePassingString = ""
+	checker.FuncReturnType = "int"
+	checker.FuncParamNamesAndTypes = obj.Converter[[][]string](collects.ValFinder("args", "out", -1))
+
+	var prod *lvl.Profile = &lvl.Profile{"CHECKERNAME", "CHECKERNAMEUSER", "CHECKERNAMEPROPER", "cpp"}
+	getter := make(chan string)
+
+	var BatchGathererIns *lvl.BatchGatherer = &lvl.BatchGatherer{
+		ParamBuncher:        [][3]string{{"a", "int", "12"}, {"b", "int", "13"}},
+		ParamTimeLimitToRun: 15.1,
+		CllCodeParams:       "",
+		CllUserCode:         "double AddTwoNumbers(int a, int b){return a + b;}",
+		CllProperCode:       "double AddTwoNumbers(int a, int b){return a + b;}",
+		CllProfile:          prod,
+		CllReturns:          getter}
+
+	checker.Collection = append(checker.Collection, BatchGathererIns)
+	chtest.CodeBatcher(checker, "using namespace std;\n#include <iostream>\n\n\n")
+
 }
 
 func WebSocketRunners() {

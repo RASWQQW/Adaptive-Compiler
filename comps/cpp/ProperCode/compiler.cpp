@@ -9,6 +9,8 @@ using namespace std;
 #include <cstdarg>
 #include <random>
 #include <format>
+#include <bits/stdc++.h>
+
 
 
 int** AddTwoNumbers(int a, int b){
@@ -62,6 +64,14 @@ int main(){
  	// cout << AddTwoNumbers(a=a, b=b);
 	// int  dd[1][2] = {{1, 2}};
 	// cout << dd << endl << *(*(dd)) << endl << *(*(dd)+1) << endl << dd+1<< endl << dd + 2;
-	checkerdd();
+	// checkerdd();
+
+    std::vector<int>::iterator it;
+    vector<int> dd = {1 , 2, 3};
+
+    it = std::find(dd.begin(), dd.end(), 16);
+    cout << to_string(dd.end() != it) << endl;
+
+    cout << int(5.9 / 2);    
 	return 0;
 }

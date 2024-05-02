@@ -137,6 +137,7 @@ func SaveCode(path string, res string) {
 }
 
 // GLOBAL CHANNEL VALU
+var FuncTypesAndName [][]string = [][]string{}
 var CurrentFuncReturnType string = ""
 var LANG_G string = ""
 var Ncounter chan int = make(chan int, 1)
@@ -158,7 +159,7 @@ func codeSaving(
 	Inputs string,
 	chStep int,
 	ProfGat *Gatherer,
-	CodeVals [][]string) string {
+	CodeVals [][3]string) string {
 	// here goes saving a two proper and user func code each other
 	// its a code from user
 	var Profile = compil.SaveProfile(LANG_G, Ncounter)
@@ -187,7 +188,7 @@ func codeSaving(
 			GetTimeCalced,
 			vals.Val2,
 			map[string]any{"CommonPath": CommonPath, "ProfileObj": *Profile, "filename": vals.Val1},
-			BotCompiler.WebSocketRunner) //Profile
+			BotCompiler.CompilerRequester) //Profile WebSocketRunner
 	}
 	properCompRes := <-vvd2
 	userCompRes := <-vdd1
@@ -272,7 +273,7 @@ func CompilingResult(
 				var Inputs string = LoCode[:len("Arg Count")]
 				if dd := codeSaving(
 					LoCode, ProperBaseCode, SaveCode, Inputs, "", 1, &Gatherer{[]string{}},
-					[][]string{} /* optional value need to optemize */); dd == "False" {
+					[][3]string{} /* optional value need to optemize */); dd == "False" {
 					return "Your code is correct"
 				} else {
 					return dd
@@ -343,7 +344,7 @@ func CompilingResult(
 				var DataTypes string = ""
 
 				//VALUES FOR GETTING INFOS ABOUT FUNC PARAMS
-				var ParamBunch [][]string = [][]string{}
+				var ParamBunch [][3]string = [][3]string{}
 				// var WrongCode bool = false
 
 				for vvs := range MainParamPassing {
@@ -362,7 +363,7 @@ func CompilingResult(
 							RndValue = mt.RandValSetting(t, ParamInfos[name][1], ParamInfos[name][0], ParamInfos[name][3])
 						}
 						RandVal = ParamInfos[name][2] + RndValue + ";"
-						ParamBunch = append(ParamBunch, []string{ParamInfos[name][2], RndValue}) // adding to value collector
+						ParamBunch = append(ParamBunch, [3]string{name, ParamInfos[name][2], RndValue}) // adding to value collector
 					} else {
 						if strings.Contains(ParamType, "[") {
 							var ListComped = mt.FindList(ParamType)
@@ -378,7 +379,7 @@ func CompilingResult(
 								var RndValue = mt.RandValSetting(t, gtypename, glen, "list")
 								RandVal = RndValType + RndValue + ";"
 
-								ParamBunch = append(ParamBunch, []string{RndValType, RndValue}) // adding to value collector
+								ParamBunch = append(ParamBunch, [3]string{name, RndValType, RndValue}) // adding to value collector
 
 							} else if len(matrixComped) > 0 {
 								var glen []string = mt.GetLen(matrixComped)
@@ -391,12 +392,12 @@ func CompilingResult(
 								//THERE I HAVE TO LOOK AT SOME CODE BY TEST RUNNIN WITH LITTLE DEBUG
 								//Real generated values and full type is in randval word
 								RandVal = FullType + "{" + valsStringsformat + "};"
-								ParamBunch = append(ParamBunch, []string{FullType, "{" + valsStringsformat + "};"})
+								ParamBunch = append(ParamBunch, [3]string{name, FullType, "{" + valsStringsformat + "};"})
 							}
 
 						} else {
 							var GeneratedSingleValue string = string(LevelFuncs.ToString(mt.TypeGuesser(t, string(ParamType))))
-							ParamBunch = append(ParamBunch, []string{ParamType, GeneratedSingleValue}) // adding to value collector
+							ParamBunch = append(ParamBunch, [3]string{name, ParamType, GeneratedSingleValue}) // adding to value collector
 							RandVal = string(fmt.Sprintf("%s %s = %s;", ParamType, name, GeneratedSingleValue))
 						}
 					}
@@ -409,13 +410,15 @@ func CompilingResult(
 				// THERE I GOTTA WRITE LITTLE FILE MANAGEMENT TO WRITE AND GET OUTPUT OF EXACT PROCESS RUNNING
 				// and finally goes checking by compiling and waiting it
 				if BatchStatus == 1 {
+					var GetTimeCalcedForCollect float32 = mt.ExecTimeComp(ParamBunch, []string{CurrentFuncReturnType})
 					var Profile = compil.SaveProfile(LANG_G, Ncounter)
 					var BatchGathererIns *LevelFuncs.BatchGatherer = &LevelFuncs.BatchGatherer{
+						ParamBuncher: ParamBunch, ParamTimeLimitToRun: GetTimeCalcedForCollect,
 						CllCodeParams: DataTypes, CllUserCode: LoCode, CllProperCode: ProperBaseCode, CllProfile: Profile, CllReturns: giver}
 					BatchGatherList.Collection = append(BatchGatherList.Collection, BatchGathererIns)
 
 				} else {
-					var MainFunc string = "\n\n" + CustomFuncs + "\n\nint main(){\n\t" + fmt.Sprintf("%s; \n\n"+outputerFunc+"\n\n", DataTypes, CurrentFuncName, strings.Join(FuncParamsPass, ", ")) + "\n}"
+					var MainFunc string = "\n\n" + CustomFuncs + "\n\nint main(){\n\t" + fmt.Sprintf("%s \n\n"+outputerFunc+"\n\n", DataTypes, CurrentFuncName, strings.Join(FuncParamsPass, ", ")) + "\n}"
 					var res string = codeSaving(LoCode, ProperBaseCode, StaticStartCode, MainFunc, DataTypes, t, NGatherer, ParamBunch)
 
 					if res != "False" {
@@ -432,16 +435,18 @@ func CompilingResult(
 			results = append(results, resHandler)
 		}
 
-		// if BatchStatus == 1 {
-		// 	for {
-		// 		if ParamCheckingTime <= len(BatchGatherList.Collection) {
-		// 			break
-		// 		}
-		// 	}
-		// 	BatchGatherList.CllRepresentString = outputerFunc
-		// 	BatchGatherList.CllTypePassingString = strings.Join(FuncParamsPass, ", ")
-		// 	compil.CodeBatcher(BatchGatherList, StaticStartCode) // The thing runs all the stuffs of Batching
-		// }
+		if BatchStatus == 1 {
+			for {
+				if ParamCheckingTime <= len(BatchGatherList.Collection) {
+					break
+				}
+			}
+			BatchGatherList.CllRepresentString = GRetFunc
+			BatchGatherList.FuncParamNamesAndTypes = FuncTypesAndName
+			BatchGatherList.CllTypePassingString = strings.Join(FuncParamsPass, ", ")
+			BatchGatherList.FuncReturnType = CurrentFuncReturnType
+			compil.CodeBatcher(BatchGatherList, StaticStartCode) // The thing runs all the stuffs of Batching
+		}
 
 		// var checked []int = []int{}
 		for v := 0; v < len(results); v++ {
@@ -531,11 +536,13 @@ func Compiler(cmp *obj.Container) string {
 	var TaskType string = lv.ToString(collects.ValFinder("task_type", "out", -1))
 	var PropCode string = lv.ToString(collects.ValFinder("prop_code", "out", -1))
 	CurrentFuncReturnType = lv.ToString(collects.ValFinder("return_type", "out", -1))
+	//pass params definition
 	var Params = obj.Converter[[][]string](collects.ValFinder("args", "out", -1))
+	FuncTypesAndName = Params
 	var ParamsNames []string = obj.Converter[[]string](collects.ValFinder("arg_names", "out", -1))
 	var ParamsTypes []string = obj.Converter[[]string](collects.ValFinder("arg_types", "out", -1))
 
-	if res := cpp_control(CurrentFuncReturnType); res[0] != "-1" {
+	if res := Cpp_control(CurrentFuncReturnType); res[0] != "-1" {
 		GRetFunc = res
 	}
 

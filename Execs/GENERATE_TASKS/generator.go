@@ -7,7 +7,11 @@ import (
 	"net/http"
 )
 
-func Checker() {
+func HeaderExrtacter() {
+
+}
+
+func Checker(prompt string, lang string) {
 	var regStr string = "https://www.blackbox.ai/api/chat"
 	var usa string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 	var regString string = `{"agentMode": {},
@@ -19,12 +23,12 @@ func Checker() {
 							"isChromeExt": false,
 							"isMicMode": false,
 							"messages": [{
-								"id": "tMckt1d",
-								"content": "write for loop in python to count 100",
+								"id": "tMckt1d", 
+								"content": "` + prompt + /*"write for loop in python to count 100"*/ `", 
 								"role": "user"}],
 							"previewToken": null,
 							"trendingAgentMode" : {},
-							"userId" : "9ae48abf-5aae-48ec-940b-c044dfc04298"}`
+							"userId" : "9ae48abf-5aae-48ec-940b-c044dfc04298"}` // userId , message.id might need dynamic change of value?
 
 	req, _ := http.NewRequest("POST", regStr, bytes.NewBuffer([]byte(regString)))
 	req.Header.Set("Content-Type", "application/json")

@@ -53,9 +53,9 @@ func TypeComplexityCalc(Params []string, is_right_numb bool) float32 {
 func StepGiving(task_id int, MainParams []string, MainParamsTypes []string) int {
 	// Step giving determines whether func have to checked long or short
 
-	// if 1 == 1 {
-	// 	return 21
-	// }
+	if 1 == 1 {
+		return 1
+	}
 
 	var getCodeParamTypes []string
 	if task_id >= 0 {
@@ -109,12 +109,12 @@ func ValIncr(cat string, val int) int {
 
 // KEY WORDS TO REFACTOR: DICT
 // THE CALCULER NOT CONSIDERS CALCULATING A DICT VALUES BUT TO TIME ARRAY AND OTHER VALUES
-func ExecTimeComp(GenTypes [][]string, RetType []string) float32 { //[0] param type [1] value
+func ExecTimeComp(GenTypes [][3]string, RetType []string) float32 { //[0] param type [1] value
 	//return 20 // default value
 
-	// if 1 == 1 {
-	// 	return 21
-	// }
+	if 1 == 1 {
+		return 21
+	}
 
 	var TypesExt []string = []string{}
 	var ValuesExt []string = []string{}
