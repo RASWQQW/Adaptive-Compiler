@@ -142,7 +142,7 @@ var CurrentFuncReturnType string = ""
 var LANG_G string = ""
 var Ncounter chan int = make(chan int, 1)
 var DELETEFOLDERNAMES chan []string = make(chan []string)
-var StaticStartCode string = "using namespace std;\n#include <iostream>\n\n\n"
+var StaticStartCode string = "using namespace std;\n#include <iostream> \n#include <string> \n#include <array>\n\n\n"
 var BatchGatherList *LevelFuncs.BatchGathererList = &LevelFuncs.BatchGathererList{}
 
 // Batch compile main and important value
@@ -173,22 +173,24 @@ func codeSaving(
 	fmt.Println("CUR VAL: ", ProfGat)
 
 	//User to Compile
-	SaveCode(CommonPath+"\\"+Profile.Name+"\\"+Profile.UserCName, staticHeader+"\n"+LoCode+"\n"+callMain)
+	var useCode string = staticHeader + "\n" + LoCode + "\n" + callMain
+	SaveCode(CommonPath+"\\"+Profile.Name+"\\"+Profile.UserCName, useCode)
 	vdd1 := make(chan []string)
 
 	// its a proper one
-	SaveCode(CommonPath+"\\"+Profile.Name+"\\"+Profile.ProperCName, staticHeader+"\n"+ProperBaseCode+"\n"+callMain)
+	var properCode string = staticHeader + "\n" + ProperBaseCode + "\n" + callMain
+	SaveCode(CommonPath+"\\"+Profile.Name+"\\"+Profile.ProperCName, properCode)
 	vvd2 := make(chan []string)
 	// because its a method  and can gain res via chan
 	//go TimeLimitCompiler(GetTimeCalced, vvd2, map[string]any{"CommonPath": CommonPath, "ProfileObj": Profile, "filename": Profile.ProperCName}, cpp.Runner) //Profile
 
 	//RUNNING VALUES INP TIMELIMITED AND API COMPILERS
-	for _, vals := range []LevelFuncs.StrListStrChan{{Profile.UserCName, vdd1}, {Profile.ProperCName, vvd2}} {
+	for _, vals := range []LevelFuncs.StrListStrChan{{Profile.UserCName, vdd1, useCode}, {Profile.ProperCName, vvd2, properCode}} {
 		go BotCompiler.TimeLimitCompiler(
 			GetTimeCalced,
 			vals.Val2,
-			map[string]any{"CommonPath": CommonPath, "ProfileObj": *Profile, "filename": vals.Val1},
-			BotCompiler.CompilerRequester) //Profile WebSocketRunner
+			map[string]any{"CommonPath": CommonPath, "ProfileObj": *Profile, "filename": vals.Val1, "lang": "cpp", "code": vals.Code},
+			BotCompiler.WebSocketRunner) //Profile WebSocketRunner
 	}
 	properCompRes := <-vvd2
 	userCompRes := <-vdd1
@@ -542,7 +544,7 @@ func Compiler(cmp *obj.Container) string {
 	var ParamsNames []string = obj.Converter[[]string](collects.ValFinder("arg_names", "out", -1))
 	var ParamsTypes []string = obj.Converter[[]string](collects.ValFinder("arg_types", "out", -1))
 
-	if res := Cpp_control(CurrentFuncReturnType); res[0] != "-1" {
+	if res := Cpp_control(CurrentFuncReturnType, BatchStatus /*only by  batchstatus wll pick  the representer type*/); res[0] != "-1" {
 		GRetFunc = res
 	}
 

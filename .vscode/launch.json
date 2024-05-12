@@ -13,7 +13,7 @@
         },
         {
             "name": "C++ Launch",
-            "type": "cppdbg",
+            "type": "cppdbg",   
             "request": "launch",
             "program": "${workspaceFolder}/comps/cpp/ProperCode/a.exe",
             "args": ["arg1", "arg2"],

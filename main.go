@@ -138,8 +138,8 @@ func main() {
 	// fmt.Println(chtest.GetSessionId("cpp"))
 
 	// WebRunner()
-	var userCode = "double AddTwoNumbers(int a, int b){return a + b;}"
-	RunCode("cpp", userCode, "AddTwoNumbers")
+	// var userCode = "double AddTwoNumbers(int a, int b){return a + b;}"
+	// RunCode("cpp", userCode, "AddTwoNumbers")
 
 	// fmt.Println(
 	// 	strconv.Quote(`int main(){std::cout << "CODEER"
@@ -158,6 +158,8 @@ func main() {
 	// var CheckerText string = "%s%s"
 	// var CheckerTwo string = fmt.Sprintf("Apple%s", CheckerText, "Txt2", "Txt3")
 	// fmt.Println(CheckerTwo)
+	// chtest.GetSessionId("cpp")
+	WebRunner()
 }
 
 func CodeRunner() {
@@ -174,7 +176,7 @@ func CppCodeCreator() {
 	gb.GetTaskByName(collects)
 	gb.GetFuncParams(collects)
 
-	checker.CllRepresentString = inputed.Cpp_control("")
+	checker.CllRepresentString = inputed.Cpp_control("", 1)
 	checker.CllTypePassingString = ""
 	checker.FuncReturnType = "int"
 	checker.FuncParamNamesAndTypes = obj.Converter[[][]string](collects.ValFinder("args", "out", -1))

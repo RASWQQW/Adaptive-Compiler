@@ -50,6 +50,7 @@ func maidn() {
 type StrListStrChan struct {
 	Val1 string
 	Val2 chan []string
+	Code string
 }
 
 type ValType struct {

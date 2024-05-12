@@ -33,7 +33,7 @@ func Cpp_control(FuncRetType string, compilerType int) []string { //FuncRetType 
 	var Functions string = `
 	template <class T> bool TypeHandler(const T &TypeChecker)
 	{
-		if(!is_array<T>::value){
+		if(!std::is_array<T>::value){
 			return 0;
 		}
 		return 1;
@@ -41,12 +41,11 @@ func Cpp_control(FuncRetType string, compilerType int) []string { //FuncRetType 
 
 	// <|>int vals[3] = {1, 2, 3};<|>
 	var dArrayCode [3]string = [3]string{
-		"DArrayChecker", // header
 		//body
 		`template <typename T, int W>
-		void DArrayChecker(T vals[W]){
+		void DArrayChecker(T vals[W], string getRetVal[]){
 		string Printer = "";
-		for(int v = 0; v < sizeof vals / sizeof vals[0]; v++){
+		for(int v = 0; v < W; v++){
 			// Only prints types with single value
 			if(!TypeHandler(vals[v])){
 				cout << vals[v] + " ";
@@ -56,26 +55,27 @@ func Cpp_control(FuncRetType string, compilerType int) []string { //FuncRetType 
 		`template <typename T, int W>
 		string DArrayChecker(T vals[W]){
 		string Printer = "";
-		for(int v = 0; v < sizeof vals / sizeof vals[0]; v++){
+		for(int v = 0; v < W; v++){
 			// Only prints types with single value
 			if(!TypeHandler(vals[v])){
 				Printer = Printer +  vals[v] + " ";
 			}
 		}
-		return Printer;
-	}`}
+		(getRetVal)[1] = "1";
+		getRetVal[0] = Printer;
+	}`,
+		"DArrayChecker"}
 
 	//<type1|>int vals[3][2] = {{1, 2}, {3, 4}, {5, 6}};<type1|>
 	var ddArrayCode [3]string = [3]string{
-		"DDArrayChecker", // header
 		// body
 		`template <typename T, int W, int H>
 		void DDArrayChecker(T vals[W][H]){
 		string Printer = "";
-		for(int v = 0; v < sizeof vals / sizeof vals[0]; v++){
+		for(int v = 0; v < H; v++){
 			if(TypeHandler(vals[v])
 				){ // END FROM HERE TO MAKE SOME SENSE TO CREATE IDEAL SORTING ON TYPE RECOGNITION
-					for(int v2 = 0; v2 < sizeof vals[v] / sizeof *(*(vals + v) + v2); v2++){
+					for(int v2 = 0; v2 < H; v2++){
 						//*(*(vals2 + v) + v2) = vals[v][v2];
 						cout << vals[v][v2] + " ";
 					}
@@ -84,44 +84,46 @@ func Cpp_control(FuncRetType string, compilerType int) []string { //FuncRetType 
 			}
 		}`,
 		`template <typename T, int W, int H>
-		string DDArrayChecker(T vals[W][H]){
+		string DDArrayChecker(T vals[W][H], string getRetVal[]){
 		string Printer = "";
-		for(int v = 0; v < sizeof vals / sizeof vals[0]; v++){
+		for(int v = 0; v < W; v++){
 			if(TypeHandler(vals[v])
 				){ // END FROM HERE TO MAKE SOME SENSE TO CREATE IDEAL SORTING ON TYPE RECOGNITION
-					for(int v2 = 0; v2 < sizeof vals[v] / sizeof *(*(vals + v) + v2); v2++){
+					for(int v2 = 0; v2 < H; v2++){
 						//*(*(vals2 + v) + v2) = vals[v][v2];
 						Printer = Printer + vals[v][v2] + " ";
 					}
 					Printer = Printer + "\n";
 				}
 			}
-			return Printer;
-			}`}
+			(getRetVal)[1] = "1";
+			getRetVal[0] = Printer;
+			}`, "DDArrayChecker"}
 
 	var SimpleValue [3]string = [3]string{
-		"Printer",
 		`template<typename T>
 		void Printer(T PrintType){
-			cout << to_string(PrintType);
+			cout << std::to_string(PrintType);
 		}`,
 		`template<typename T>
-		string Printer(T PrintType){
-			return to_string(PrintType);
-		}`}
+		string Printer(T PrintType, string getRetVal[]){
+			(getRetVal)[1] = "1";
+			getRetVal[0] = std::to_string(PrintType);
+		}`,
+		"Printer"}
 
 	//var ChangeArgs map[string]string = map[string]string{"type1": ReturnDType}
 	//var CostumCode string = ""
 	//var CodeToRun string = MainCode + "\n" + Functions
-	FuncRetType = strings.ReplaceAll(FuncRetType, "[]", "[50]") // if there are empty valuus just fill
+	FuncRetType = strings.ReplaceAll(FuncRetType, "[]", "[sizeof()]") // if there are empty valuus just fill
 	var forDeal string = strings.ReplaceAll(strings.ReplaceAll(strings.Join(strings.Split(FuncRetType, "]["), ", "), "[", ""), "]", "")
 
 	if len(mt.FindMatrix(FuncRetType)) > 0 {
-		return []string{fmt.Sprintf("%s<%s>", ddArrayCode[compilerType], forDeal), Functions + "\n\n" + ddArrayCode[1]}
+		return []string{fmt.Sprintf("%s<%s>", ddArrayCode[2], forDeal), Functions + "\n\n" + ddArrayCode[compilerType]}
 	} else if len(mt.FindList(FuncRetType)) > 0 {
-		return []string{fmt.Sprintf("%s<%s>", dArrayCode[compilerType], forDeal), Functions + "\n\n" + dArrayCode[1]}
+		return []string{fmt.Sprintf("%s<%s>", dArrayCode[2], forDeal), Functions + "\n\n" + dArrayCode[compilerType]}
 	} else {
-		return []string{fmt.Sprintf("%s<%s>", SimpleValue[compilerType], forDeal), Functions + "\n\n" + SimpleValue[1]}
+		return []string{fmt.Sprintf("%s<%s>", SimpleValue[2], forDeal), SimpleValue[compilerType]} //Functions + "\n\n" +
 
 	}
 	return []string{"-1"}

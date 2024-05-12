@@ -535,7 +535,7 @@ func WebSocketRunner(params_c map[string]any, returnValue chan []string) []strin
 	// STRING LOOKING POINT
 
 	inv_ <- strconv.Quote(code)
-	InitWebsocketClient(cc, lang, outv_, inv_, false, false)
+	InitWebsocketClient(cc /*lang need to change */, "cpp", outv_, inv_, false, false)
 	for v := 0; v < cc; v = v + 1 {
 		select {
 		case out_tuck := <-outv_:

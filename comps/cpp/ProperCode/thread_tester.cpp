@@ -6,7 +6,9 @@ using namespace std;
 #include <string>
 #include <sstream>
 #include <bits/stdc++.h>
-
+#include <stdio.h>
+#include <windows.h> // for EXCEPTION_ACCESS_VIOLATION
+#include <excpt.h>
 
 //https://en.cppreference.com/w/cpp/thread/thread/native_handle
 auto ffer = [](int timesd){
@@ -15,35 +17,124 @@ auto ffer = [](int timesd){
     cout <<  "CheckerCode2 >>" << timesd << endl;
 };
 
-
+// int filterException(int code, PEXCEPTION_POINTERS ex) {
+//     std::cout << "Filtering " << std::hex << code << std::endl;
+//     return EXCEPTION_EXECUTE_HANDLER;
+// }
 // THERE IT HAVE TO BE REWRITTEN TO THE FUNCTIONS
 // BETTER CAN TRY MACROS TO MAKE IT MORE FITTING
 // ALL OF THEM FUNC_PREPARE VALUES AND STATIC
-typedef string to_run_ret;
+// typedef string ret_originType;
+
+int filter(unsigned int code, struct _EXCEPTION_POINTERS *ep)
+{
+    cout << "in filter.";
+    if (code == EXCEPTION_ACCESS_VIOLATION)
+    {
+        cout << "caught AV as expected.";
+        return EXCEPTION_EXECUTE_HANDLER;
+    }
+    else
+    {
+        cout << "didn't catch AV, unexpected.";
+        return EXCEPTION_CONTINUE_SEARCH;
+    };
+}
+
+typedef int** to_run_ret;
 typedef to_run_ret (*run_code_temp)(string, string[]); //  there we need just pass parameters of func when preparing
 double TIME_LIMIT = 3.13;   
 
+template <class T> bool TypeHandler(const T &TypeChecker)
+	{
+		if(!is_array<T>::value){
+			return 0;
+		}
+		return 1;
+	}
+    
 
+template<typename T>
+void ValPrinter(T PrintType, string getRetVal[]){
+    (getRetVal)[1] = "1";
+    getRetVal[0] = to_string(PrintType);
+}
      
+template <typename T, int W, int H>
+void DDArrayChecker(T **vals, string getRetVal[]){
+    string Printer = "";
+    // cout << "Inside " << H <<" " <<  W << " " << vals[0][0];
+    for(int v = 0; v < 20; v++){
+        cout << "Inside2" << vals[v][0] << endl;
+        if(!TypeHandler(vals[v])
+            ){ // END FROM HERE TO MAKE SOME SENSE TO CREATE IDEAL SORTING ON TYPE RECOGNITION
+                for(int v2 = 0; v2 < H; v2++){
+                    //*(*(vals2 + v) + v2) = vals[v][v2];
+                    cout << "to print " << vals[v][v2] << " ";
+                    Printer = Printer + to_string(vals[v][v2]) + " ";
+                }
+                Printer = Printer + "\n";
+            }
+        }
+        cout << "AFTER LOOP: " << endl;
+        (getRetVal)[1] = "1";
+        getRetVal[0] = Printer;
+        cout << "Final " << H << endl;
+}
+
+template <typename T, int W>
+void DArrayChecker(T *vals,  string getRetVal[]){
+    string Printer = "";
+    for(int v = 0; v < W; v++){
+        // Only prints types with single value
+        if(!TypeHandler(vals[v])){
+            Printer = Printer + to_string(vals[v]) + " ";
+        }
+    }
+    (getRetVal)[1] = "1";
+    getRetVal[0] = Printer;
+}
 
 
-string Printer(string PrintType, string PrintType2[]){
+
+string Printerd(string PrintType, string PrintType2[]){
     return PrintType;
 }
 
-void Representers(string getRetVal[], to_run_ret val){
-    //cout << "Start: " << val << endl <<"pointer: " << pp;
-    std::this_thread::sleep_for(std::chrono::milliseconds(3050 + stoi(val)));
-    (getRetVal)[1] = "1";
-    getRetVal[0] = "pointer: " + val;
-    //cout << "pp val was given to " << getRetVal[1] << endl << getRetVal[0] << endl;
+int check(){
+    return 12;
 }
+
+int** CodePrinter2d(string val1, string val2[]){
+    int val[2][2] = {{1, 2}, {1, 2}};
+    int (*vv)[2][2] = &val;
+    int **checker;
+    checker  = new int *[2];
+    (*checker) = new int[2]{1, 2};
+    *(checker+1) = new int[2]{3, 4};
+    return checker;
+}
+
+int* CodePrinter(string val1, string val2[]){
+    return new int[2]{12, 45};
+}
+
+
+// void Representers(string getRetVal[], to_run_ret val){
+//     //cout << "Start: " << val << endl <<"pointer: " << pp;
+//     std::this_thread::sleep_for(std::chrono::milliseconds(3050 + stoi(val[0][0])));
+//     (getRetVal)[1] = "1";
+//     getRetVal[0] = "pointer: " + val[0][0];
+//     //cout << "pp val was given to " << getRetVal[1] << endl << getRetVal[0] << endl;
+// }
+
 
 
 // FUNC PREPARE TEMPLATE
 // COMPLETE TRANSMIITER
 void transmitFunc(run_code_temp to_run, 
-                  void(*Representer)(string[], to_run_ret), 
+                //   void(*Representer)(string[], to_run_ret), 
+                  string rep_type,
                   vector<vector<string>> *arr, 
                   string FuncId,
                   int place,
@@ -52,14 +143,80 @@ void transmitFunc(run_code_temp to_run,
                   string parameter2[1] /*THERE FUNC WILL BE PREPARED AS TEMPLATE TO OWN PARAMS*/){
 
     std::chrono::steady_clock::time_point begin_t = std::chrono::steady_clock::now();
-    std::stringstream s;
+    std::stringstream stream_gather;
 
     try{
         //std::cout << "FUNC EXCEEDED CHECKbefore" << endl;
         string pointer[2] = {"0", "0"};
         ///throw runtime_error("CHECK_TEXT!");
-        auto runner = [Representer, to_run, parameter1, parameter2, &pointer]() {
-            Representer(pointer, to_run(parameter1, parameter2));};
+        auto runner = [rep_type, to_run, parameter1, parameter2, &pointer]() {
+            
+            to_run_ret valer = to_run(parameter1, parameter2);
+            // typedef std::remove_reference<decltype( **valer )>::type s1_remove_originType;
+
+            if(1 != 1){
+
+            }
+            // else if (rep_type == "Printer"){
+            //     ValPrinter<to_run_ret>(valer, pointer);
+            // }    
+            else if (rep_type == "DDArrayChecker" ) {//&& std::is_pointer<s1_remove_originType>::value()
+                to_run_ret pointer_pass_val;
+                //https://en.cppreference.com/w/cpp/types/is_pointer#:~:text=std%3A%3Ais_pointer%20is%20a,value%20is%20equal%20to%20false.
+                
+                int setter_sizer = sizeof(valer) / sizeof(valer[0]);
+
+                //BEFORE EXPLICIT CONVERT                
+                // pointer_pass_val = new ret_originType *[setter_sizer];
+                // for(int s = 0; s < setter_sizer; s++){
+                //     pointer_pass_val[s] = valer[s];
+                // }
+
+                // typedef std::remove_reference<decltype( *valer )>::type deffer;
+                // if (typeid(deffer).name() != typeid(ret_originType).name()){
+
+                // to_run_ret (&conv_type)[][(sizeof(valer[0]) / sizeof(ret_originType))] = valer; 
+                // HERE I CAN WRITE VIA STRING BUT PROBLEM IS ON ONE LEVEL POINTER
+                // NOT IN THE SECOND, SO I HAVE TO CHECK IN FIRST AND DETERMINE IT HAS VALUE OR NOT
+                std::stringstream string_tug;
+                typedef std::remove_reference<decltype( **valer )>::type ret_originType;
+                int enrichStat = 50;
+                int CountGetter = 0;
+                for(int dds = 0; dds < enrichStat; dds++){
+                    __try {
+                        try{
+                            if(to_string(valer[dds][0]).size() >= 6){  // have to set some  limit how generated values are will be passed below 1kk
+                                break;
+                            }
+                            CountGetter = CountGetter + sizeof(valer[0]);
+                        }
+                        catch (const exception &exp){
+                            string_tug << exp.what();
+                            if(string_tug.str().find("segmentation") != std::string::npos){
+                                if(string_tug.str().find("fault") != std::string::npos){
+                                    break;
+                                }
+                            }
+                        }
+                    } __except(filter(GetExceptionCode(), GetExceptionInformation())){
+                        std::cout << "caught" << std::endl;
+                    }   
+                    
+                }
+                // int (*val)[10][10] = &valer;
+                // std::array<valer>();
+
+                std::cout <<  "ss: " << CountGetter << " before run size: " << sizeof(*valer) << "  " << sizeof(valer[0]) << "||" <<  sizeof(valer[0]) / sizeof(ret_originType) << endl;
+                DDArrayChecker<ret_originType, sizeof(CountGetter) / sizeof(valer[0]), sizeof(valer[0]) / sizeof(ret_originType)>(valer, pointer);
+                // }
+            }
+            // else if (rep_type == "DArrayChecker"){
+            //     to_run_ret pointer_pass_val;
+            //     typedef std::remove_reference<decltype( *pointer_pass_val )>::type ret_originType;
+            //     DArrayChecker<ret_originType, sizeof(valer) / sizeof(ret_originType)>(valer, pointer);
+            // }
+
+        };
 
         std::thread ddx(runner);
         ddx.detach();
@@ -88,9 +245,9 @@ void transmitFunc(run_code_temp to_run,
     }catch(const exception &e){
         // make sense to notify it gone from outer codes not from templates
         //cout << "come to error" << endl;
-        s << e.what();
+        stream_gather << e.what();
         //cout << "errorcode: " << s.str() << endl;
-        (*arr).at(place) = {FuncId, "<code_exec_error>" + s.str() + "</code_exec_error>", "0"}; /// )};  last zero only means its proper end 
+        (*arr).at(place) = {FuncId, "<code_exec_error>" + stream_gather.str() + "</code_exec_error>", "0"}; /// )};  last zero only means its proper end 
     }
 }
 
@@ -114,8 +271,12 @@ int main(){
     params values__lister[10] = {{"1", {"2"}}, {"1", {"2"}}, {"1", {"2"}}, {"1", {"2"}}, {"1", {"2"}}, {"1", {"2"}}, {"1", {"2"}}, {"1", {"2"}}, {"1", {"2"}}, {"1", {"2"}}};
     string FuncIds[10] = {"FuncId1", "FuncId2", "FuncId1", "FuncId2", "FuncId1", "FuncId2", "FuncId1", "FuncId2", "FuncId1", "FuncId2"};
     float given_time_limits[10] = {3.12, 3.12, 3.12, 3.12, 3.12, 3.12,3.12, 3.12,3.12, 3.12};
-    vector<run_code_temp> objectsd = {Printer, Printer, Printer, Printer, Printer, Printer, Printer, Printer, Printer, Printer};
+    vector<run_code_temp> objectsd;// = {CodePrinter, CodePrinter, CodePrinter, CodePrinter, CodePrinter, CodePrinter, CodePrinter, CodePrinter, CodePrinter, CodePrinter};
 
+    for(int v = 0; v < 10; v++){
+        objectsd.push_back(CodePrinter2d);
+    }
+    
     // after forming values
     vector<vector<string>> catcher = {};
     vector<std::thread> threads;
@@ -124,7 +285,7 @@ int main(){
     int valSent = 0;
     // promise<vector<string>> promiser;
     // std::future<vector<string>> ff = promiser.get_future();
-    for(int v = 0; v < Objects_size; v ++){
+    for(int v = 0; v < 1; v ++){
         // THERE IT GOES VIA RUNTIME AND 
         // EACH PASSING ARGUMENT WILL HAVE PARAM NAME AS WELL WHEN PASSING
         catcher.push_back({FuncIds[v], "-1", "-1"});
@@ -132,7 +293,7 @@ int main(){
             given_time_limits - is unique time limit collection of each func
         */
         
-        threads.push_back(std::thread(transmitFunc, Printer, Representers, &catcher, FuncIds[v], v, given_time_limits[v], /**//* further goes changed values */values__lister[valSent].val1, values__lister[valSent].val2));//
+        threads.push_back(std::thread(transmitFunc, objectsd[v], /*have to come in string way of func*/ "DDArrayChecker", &catcher, FuncIds[v], v, given_time_limits[v], /**//* further goes changed values */values__lister[valSent].val1, values__lister[valSent].val2));//
 
         if (v % 2 == 1) {
             valSent = valSent + 1;

@@ -35,8 +35,9 @@ func GetSessionId(lang string) string {
 	templ := regexp.MustCompile(`var sessionId = "[A-Za-z0-9]+";`)
 	var StringFound string = templ.FindString(string(red))
 	fmt.Println("Code snippet: " + StringFound)
-	var SessionFinder string = strings.Replace(strings.Replace(StringFound, `var sessionId = "`, "", -1), `";`, "", -1)
-	return strings.Trim(SessionFinder, " ")
+	var SessionFinder string = strings.Trim(strings.Replace(strings.Replace(StringFound, `var sessionId = "`, "", -1), `";`, "", -1), " ")
+	fmt.Println("Code snippet2: " + SessionFinder)
+	return SessionFinder
 }
 
 func InitWebsocketClient(getLimit int, lang string, OutValue chan string, CodeToSolve chan string, HandTest bool, Cycling bool) {
