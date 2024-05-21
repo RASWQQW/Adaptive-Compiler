@@ -8,6 +8,7 @@ import (
 	inputing "ep/Execs"
 	inputed "ep/Execs/CppPr"
 	"ep/Execs/obj"
+	"strconv"
 
 	"ep/web/Mainer"
 
@@ -145,7 +146,6 @@ func main() {
 	// 	strconv.Quote(`int main(){std::cout << "CODEER"
 
 	// 	}`), 'b'>>1, byte('c'))
-	// CodeRunner()
 	// var gb baseCalls.BaseConnection = baseCalls.GetBase()
 	// var collects *obj.Career = &obj.Career{INOUTS: map[string]any{"task_name_id": "AddTwoNumbers", "lang": "cpp"}, OUTS: map[string]any{}}
 	// //collector = append(collector, taskIdCar)
@@ -159,11 +159,28 @@ func main() {
 	// var CheckerTwo string = fmt.Sprintf("Apple%s", CheckerText, "Txt2", "Txt3")
 	// fmt.Println(CheckerTwo)
 	// chtest.GetSessionId("cpp")
-	WebRunner()
+	// WebRunner()
+	CodeRunner()
+
+}
+
+func OnlineRunner() {
+
+	var cc int = 5 // amount of socket outputs varies
+	var outv_ = make(chan string, cc)
+	var inv_ = make(chan string, 1)
+
+	var cdedd string = "using namespace std;\n #include <iostream> \n#include <string> \n#include <array>\n\n\n\ndouble AddTwoNumbers(int a, int b){\n\treturn a + b;\n\t}\n\n\ntemplate<typename T>\n\t\tvoid Printer(T PrintType){\n\t\t\tcout << std::to_string(PrintType);\n\t\t}\n\nint main(){\n\tint a = 0;\nint b = 0;\n \n\nPrinter<double>(AddTwoNumbers(a=a, b=b));\n\n\n}"
+	gotChan, err := strconv.Unquote(fmt.Sprintf(`"%s"`, cdedd))
+
+	fmt.Println(err)
+	fmt.Println(gotChan)
+	inv_ <- cdedd
+	chtest.InitWebsocketClient(cc /*lang need to change */, "cpp", outv_, inv_, false, false)
 }
 
 func CodeRunner() {
-	CodeGenerator.Checker("", "")
+	CodeGenerator.Checker("", "cpp", false)
 }
 
 func CppCodeCreator() {

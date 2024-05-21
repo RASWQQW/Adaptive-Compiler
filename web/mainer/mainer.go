@@ -25,6 +25,15 @@ func Runnersss() {
 		c.HTML(http.StatusOK, "index.tmpl", gin.H{"OUTVAL": "Click on RUN button to see the output"})
 	})
 
+	// BOTH TO GENERATED CODE
+	mod.GET("/cdgen", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.tmpl", gin.H{"OUTVAL": "Click on RUN button to see the output"})
+	})
+
+	mod.POST("/cdgen", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.tmpl", gin.H{"OUTVAL": "Click on RUN button to see the output"})
+	})
+
 	mod.GET("", Main)
 	mod.GET("/form", Form)
 	mod.GET("/cpprun", CppInter)

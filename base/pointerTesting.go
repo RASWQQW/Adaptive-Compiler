@@ -18,7 +18,7 @@ func Testing() {
 	isstring = "Changed value of var"
 	fmt.Println("NextVal", isstring, cup, *cup)
 
-	var strval2 string = "Apples arent too good"
+	var strval2 string = "Apples are NOT too good"
 	cup = &strval2
 
 	fmt.Println("NextVal2", strval2, cup, &strval2, cup == &strval2, *cup)

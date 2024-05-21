@@ -14,10 +14,10 @@ template<typename T>
 		void Printer(T PrintType){
 			cout << std::to_string(PrintType);
 		}
- 
+
 int main(){
-	int a = 0;
-int b = 11;
+	int a = 7;
+int b = 2;
  
 
 Printer<double>(AddTwoNumbers(a=a, b=b));

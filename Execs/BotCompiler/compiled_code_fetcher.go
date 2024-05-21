@@ -11,7 +11,7 @@ import (
 )
 
 // var address string = "wss://cpp.repl-web.programiz.com/socket.io/?sessionId=YrNOQVqNZv&lang=cpp&EIO=3&transport=websocket"
-var UserAgent string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+var UserAgent string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 
 // THERE I MIGHT USE ONE ID IN MANY QUERY
 // AND ONLY DROP IT WHEN RANS OUT OF USE
@@ -28,6 +28,18 @@ func GetSessionId(lang string) string {
 	}
 
 	req.Header.Set("User-Agent", UserAgent)
+	req.Header.Set("Host", "tpcg2.tutorialspoint.com")
+
+	// req.Header.Set("Connection", "Upgrade")
+	// req.Header.Set("Pragma", "no-cache")
+	// req.Header.Set("Cache-Control", "no-cache")
+	// req.Header.Set("Origin", "https://www.tutorialspoint.com")
+	// req.Header.Set("Sec-WebSocket-Version", "13")
+	// req.Header.Set("Accept-Encoding", "gzip, deflate, br, zst")
+	// req.Header.Set("Accept-Language", "en-US,en-KZ;q=0.9,en;q=0.8,ru;q=0.7")
+	req.Header.Set("Sec-WebSocket-Key", "3Iai/2iHIWGWituLYrs0PQ==")
+	req.Header.Set("Sec-WebSocket-Extensions", "permessage-deflate; client_max_window_bits")
+
 	var cl *http.Client = &http.Client{}
 	res, _ := cl.Do(req)
 	red, _ := io.ReadAll(res.Body)
@@ -40,11 +52,13 @@ func GetSessionId(lang string) string {
 	return SessionFinder
 }
 
+// COMPILER WEBSITE
+// https://www.tutorialspoint.com/compile_cpp_online.php
 func InitWebsocketClient(getLimit int, lang string, OutValue chan string, CodeToSolve chan string, HandTest bool, Cycling bool) {
 	// give value to the variables
 	var SessionId string = GetSessionId(lang)
 	fmt.Println("Starting Client")
-	var address string = "wss://tpcg2.tutorialspoint.com/socket.io/?sessionId=" + SessionId + "&lang=csharp&EIO=4&transport=websocket" //65fc92c52c21c
+	var address string = "wss://tpcg2.tutorialspoint.com/socket.io/?sessionId=" + SessionId + "&lang=cpp&EIO=4&transport=websocket" //65fc92c52c21c
 	var GivenHeader http.Header = http.Header{}
 	GivenHeader.Add("User-Agent", UserAgent)
 
@@ -58,11 +72,15 @@ func InitWebsocketClient(getLimit int, lang string, OutValue chan string, CodeTo
 
 	conn.WriteMessage(1, []byte("40"))
 	//var SentArray = `42["code",{"code":"/* Online C++ Compiler and Editor */\n#include <iostream>\n\nusing namespace std;\n\nint main()\n{\n   std::cout << \"ssHello World\" << endl; \n   \n   return 0;\n}","language":"cpp","sessionId":"65fca1a2239b7"}]`
-	var SentArray string = `42["code", {"code": "` + strings.TrimSuffix(<-CodeToSolve, "\n") + `", "language":"cpp", "sessionId": "` + SessionId + `"}]`
+	// var SentArray = `42["code",{"code":"using namespace std;\n #include <iostream> \n#include <string> \n#include <array>\n\n\n\ndouble AddTwoNumbers(int a, int b){\n\treturn a + b;\n\t}\n\n\ntemplate<typename T>\n\t\tvoid Printer(T PrintType){\n\t\t\tcout << std::to_string(PrintType);\n\t\t}\n\nint main(){\n\tint a = 0;\nint b = 0;\n \n\nPrinter<double>(AddTwoNumbers(a=a, b=b));\n\n\n}","language":"cpp","sessionId":"65fca1a2239b7"}]`
+
+	var StringCodeVal string = <-CodeToSolve
+	StringCodeVal = strings.ReplaceAll(strings.ReplaceAll(StringCodeVal, "\n", "\\n"), "\t", "\\t")
+	var SentArray string = fmt.Sprintf(`42["code",{"code":"%s", "language":"cpp","sessionId":"%s"}]`, StringCodeVal, SessionId)
 	conn.WriteMessage(websocket.TextMessage, []byte(SentArray))
 
 	if resp != nil && resp.Header != nil {
-		fmt.Println("Resonse>>")
+		fmt.Println("Response>>")
 		for key, val := range resp.Header {
 			fmt.Println("Key: " + string(key) + " Val: " + string(val[0]))
 		}

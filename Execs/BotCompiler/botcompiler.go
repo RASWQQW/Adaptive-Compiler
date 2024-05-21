@@ -532,9 +532,10 @@ func WebSocketRunner(params_c map[string]any, returnValue chan []string) []strin
 	var outv_ = make(chan string, cc)
 	var inv_ = make(chan string, 1)
 	// THERE HAVE TO CHECKED THE FORMAT OF THE CODE ESPESSILY HOW IT LOOKS FROM
-	// STRING LOOKING POINT
+	// STRING LOOKING POINTa
 
-	inv_ <- strconv.Quote(code)
+	// getstr, _ := strconv.Unquote(fmt.Sprintf(`"%s"`, code))
+	inv_ <- code
 	InitWebsocketClient(cc /*lang need to change */, "cpp", outv_, inv_, false, false)
 	for v := 0; v < cc; v = v + 1 {
 		select {

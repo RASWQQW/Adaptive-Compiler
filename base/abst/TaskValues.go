@@ -202,6 +202,9 @@ func (ctx *BaseConnection) GetTaskById(task_id int) string {
 	return ""
 }
 
+/*
+
+
 // func (ctx *BaseConnection) ExecuteMany(resqs []string) {
 // 	res, _ := ctx.dbOb.Query(fmt.Sprintf(`%s`, string(strings.Join(resqs, "; "))))
 // 	for val := true; val; val = res.NextResultSet() {
@@ -225,3 +228,74 @@ func (ctx *BaseConnection) GetTaskById(task_id int) string {
 // 	}
 
 // }
+
+
+
+THERE COMES CREATE FUNCTION TO CREATE PART FUNCTIONS
+BIG BORDER
+BIG BORDER
+BIG BORDER
+*/
+
+func (ctx *BaseConnection) CreateFuncArgs(Task_id string, args [][]string) {
+	var arg_types []string = []string{}
+	var arg_names []string = []string{}
+
+	for vasl, _ := range args {
+		arg_names = append(arg_names, args[vasl][1])
+		arg_types = append(arg_types, args[vasl][0])
+	}
+
+	var insCode string = fmt.Sprintf(`INSERT INTO "FunctionArgs"(task_id, args_names, args_types) VALUES(%s,'{%s}', '{%s}')`, Task_id, strings.Join(arg_names, ", "), strings.Join(arg_types, ", "))
+	_, errd := ctx.dbOb.Exec(insCode)
+	if errd != nil {
+		panic(errd)
+	}
+	// `CREATE TABLE IF NOT EXISTS "FunctionArgs"(
+	// 	id serial primary key,
+	// 	task_id integer REFERENCES "Tasks"(id),
+	// 	args_name text[],
+	// 	args_types text[]
+	// 	);`
+}
+
+func (ctx *BaseConnection) CreateFuncDec(task_name_id string, ret_val_type string) int64 {
+	// can insert both func and task os both of it comes from one values
+	var insCode string = fmt.Sprintf(
+		`INSERT INTO "Tasks"(task_name_id, text) 
+		VALUES('%s','%s') RETURNING id`, task_name_id, "")
+
+	given_task_id, _ := ctx.dbOb.Exec(insCode)
+	got, _ := given_task_id.LastInsertId()
+
+	var ins2_Code string = fmt.Sprintf(
+		`INSERT INTO "Functions"(task_id, func_name, return_value) 
+		VALUES(%s, '%s', '%s')`, got, task_name_id, ret_val_type)
+
+	_, errd := ctx.dbOb.Exec(ins2_Code)
+	if errd != nil {
+		panic(errd)
+	}
+	return got
+	// `CREATE TABLE IF NOT EXISTS "Functions"(
+	// 	id serial primary key,
+	// 	task_id integer REFERENCES "Tasks"(id),
+	// 	func_name varchar not null,
+	// 	return_value varchar default 'void'
+	// 	);`
+
+	// `create table if not exists "Tasks"(
+	// 		id serial primary key,
+	// 		task_name_id varchar not null,
+	// 		text varchar(255) not null
+	// 		);`
+}
+
+func (ctx *BaseConnection) CreateProperCode(lang string, given_code string, task_id int64) {
+
+	var insCode string = fmt.Sprintf(`INSERT INTO "ProperCode"(task_id, lang, code) VALUES(%d,'%s', '%s')`, task_id, lang, given_code)
+	_, errd := ctx.dbOb.Exec(insCode)
+	if errd != nil {
+		panic(errd)
+	}
+}

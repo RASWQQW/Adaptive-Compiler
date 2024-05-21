@@ -33,7 +33,12 @@ func Connecting() sql.DB { //(ct *BaseConnection)
 
 		db.Begin()
 		fmt.Println("Back Response:", db.Ping())
-		var execString string = `create table if not exists "Tasks"(id serial primary key, task_name_id varchar not null, text varchar(255) not null);`
+		var execString string = `create table if not exists "Tasks"(
+										id serial primary key, 
+										task_name_id varchar not null, 
+										text varchar(255) not null
+										);`
+
 		result, err := db.Exec(execString)
 
 		fmt.Println("result", result)
