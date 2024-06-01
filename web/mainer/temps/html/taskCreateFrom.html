@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+  <style>
+    .ParamClass{
+      display: flex;
+      
+    }
+    #getParamName{
+      height: 20px;
+    }
+    #getParamType{
+      height: 20px;
+    }
+    .namer, .rm_buttons{
+      margin-top: 5px;
+      padding-left: 15px;
+      padding-right: 15px;
+      cursor: pointer;
+
+    }
+  </style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To Create Task</title>
+</head>
+<body>
+    <p>Function Name: </p> 
+    <!-- HERE MIGHT COME THE KEYS FUNCTION IS RECURSIVELY TOO OR IT MAY BE MUCH MORE USEFUL TO CHANGE IT -->
+    <input type="text" id="getFuncId" readonly>
+
+    <p>Change function name: </p> 
+    <input type="text" placeholder="You can type if needed" id="getFuncIdTo_Change">
+
+    <div  id="save_func_name" style="cursor: pointer">
+      <h1 style='font-size: 15px'>➕Save<h1>
+    </div>
+
+    <p>Return Type: </p>
+    <input type="text" placeholder="" id="getReturnTypeId" readonly>
+    
+    <p>Params: </p>
+
+    <div id="params">
+      <div class="ParamClass" id="isParam1" >
+        <p class="namer">Param Name: </p>
+        <input type="text" placeholder="" id="getParamName" readonly>
+
+        <p class="namer" >Param Type: </p>
+        <input type="text" placeholder="" id="getParamType" readonly>
+        
+      </div>
+    </div>
+    <!-- <div  id="Add_params" style="cursor: pointer">
+      <h1 style='font-size: 15px'>➕Add param<h1>
+    </div> -->
+    
+
+    <div class="in_out" style="display: flex;">
+      <p style="padding: 0px 10px 10px 10px;" >Prompt: </p>
+      <textarea  style="resize:true;  width: 350px;
+    height: 150px;" placeholder="Write  your prompt here" id="PromptText"></textarea>
+  
+
+    <p style="padding: 0px 10px 10px 10px;">Code: </p>
+      <textarea  style="resize:true;  width: 350px;
+    height: 150px;" placeholder="Write  your prompt here" id="generatedCode"></textarea>
+
+    </div>
+    
+
+
+<div id="generateButton" style="cursor: pointer">
+  <h1 style='font-size: 15px'>⟳GENERATE<h1>
+</div>
+
+<div id="SaveButton" style="cursor: pointer">
+  <h1 style='font-size: 15px'>✔SAVE<h1>
+</div>
+
+
+<!-- -- PARAM BACKUP TO CLONE IT IN FURHTER USE -->
+<div class="ParamClassParent" id="isParam1Parent"  style="display:none;">
+  <p class="namer">Param Name: </p>
+  <input type="text" placeholder="You can type if needed" id="getParamName" readonly>
+
+  <p class="namer" >Param Type: </p>
+  <input type="text" placeholder="You can type if needed" id="getParamType" readonly>
+</div>
+
+</body>
+
+
+<script>
+
+
+
+  document.getElementById("generateButton").addEventListener("click", myFunction);
+  // document.getElementById("Add_params").addEventListener("click", AddButton);
+  document.getElementById("save_func_name").addEventListener("click", save_func_val);
+
+  
+  // alert("CONNECTED1")
+
+  let Prompt = document.getElementById("PromptText");
+  
+  let generatedCodeVal = document.getElementById("generatedCode");
+  let FuncName = document.getElementById("getFuncId");
+  let returnType = document.getElementById("getReturnTypeId");
+
+
+  let AllParamsClasses = document.getElementsByClassName("ParamClass");
+  
+  // let ButtonToAddParams = document.getElementById("Add_params");
+  //alert("CONNECTED2")
+  
+  //alert("CONNECTED3")
+
+  var webSocket = new WebSocket("ws://localhost:8080/code_generate_attempt");
+
+  webSocket.onopen = function(){
+      console.log("Connected to " + webSocket.OPEN)
+  }
+
+  webSocket.onmessage = function(event){
+      let event_data = event.data
+      console.log("is got messsage " + event_data)
+      // alert(event_data);
+      let splits = event_data.split("|");
+      // alert(splits[0] + "  " + splits[0].startsWith("genCode") == true);
+      for (dd = 0; dd < splits.length; dd++){
+        if(splits[dd].startsWith("genCode:")== true){
+          document.getElementById("generatedCode").value = splits[dd].substr("genCode:".length)
+          // alert(document.getElementById("generatedCode").value);
+        }
+        else if(splits[dd].startsWith("func_name:")== true){
+          document.getElementById("getFuncId").value = splits[dd].substr("func_name:".length)
+          // alert(document.getElementById("generatedCode").value);
+        }
+        else if(splits[dd].startsWith("return_val:")== true){
+          document.getElementById("getReturnTypeId").value = splits[dd].substr("return_val:".length)
+          // alert(document.getElementById("generatedCode").value);
+        }
+        else if(splits[dd].startsWith("params:")== true){
+          // removing all param values to make to clear
+          let AllParamsClasses = document.getElementsByClassName("ParamClass");
+          for(ds = 0; ds < AllParamsClasses.length; ds++){
+              AllParamsClasses[ds].remove();
+          }
+
+          let getSplitter = splits[dd].substr(1, splits[dd].length-2).split(", ")
+          let mainParamBud = document.getElementById("params")
+          let bckupVal = document.getElementById('isParam1Parent')
+          for(d = 0; d < getSplitter.length; d++){
+            
+            let clone = bckupVal.cloneNode(true);
+
+            let innerSplit = getSplitter[d].substrb(1, getSplitter[d]-2).split("|")
+            clone.children.getParamName.value = innerSplit[1]
+            clone.children.getParamType.value = innerSplit[0]
+
+            clone.style = ""
+            clone.id = "IsParam" + d
+            mainParamBud.appendChild(clone);
+          }
+          document.getElementById("generatedCode").value = splits[dd].substr("genCode:".length)
+          // alert(document.getElementById("generatedCode").value);
+        }
+        
+      } 
+
+      alert(event.data);
+  }
+  
+  //alert('CONNECTED')
+
+  function Rm_Button(){
+    this.parentElement.remove()
+  }
+
+  function AddButton(){
+    let clone = document.getElementById("params").querySelector('#isParam1').cloneNode(true);
+    clone.children.getParamName.value = ""
+    clone.children.getParamType.value = ""
+
+    let rm_buttd = document.createElement("div")
+    rm_buttd.className = "rm_buttons"
+    rm_buttd.id = "rm_param"
+    
+    let rm_butt = document.createElement("h1")
+    rm_butt.innerHTML = "remove param"
+    rm_butt.style = 'font-size: 15px; margin-top: -2px;'
+
+    rm_buttd.appendChild(rm_butt);
+    rm_buttd.addEventListener("click", Rm_Button, false);
+    clone.appendChild(rm_buttd);
+    //  <div class="rm_buttons" id="rm_param" style="">
+    //       <h1 style='font-size: 15px'>remove param<h1>
+    //     </div>
+    document.getElementById("params").appendChild(clone);
+  }
+
+  function sendm(){
+    console.log("send message: " + Prompt.value)
+    let message_to_send = "";    
+
+    if (Prompt.value.length > 0) {
+      message_to_send = message_to_send + "PROMPT_STRING{"+Prompt.value + "}|\n";
+
+    }
+   
+    if (FuncName.value.length > 0) {
+      message_to_send = message_to_send + "FUNC_NAME_STRING{"+FuncName.value + "}|\n";
+
+    }
+
+    if (returnType.value.length > 0) {
+      message_to_send = message_to_send + "RETURN_TYPE_STRING{"+returnType.value + "}|\n";
+
+    }
+    
+    let isParamsAdder = "";
+    for (let i = 0; i < AllParamsClasses.length; i++) {
+      let paramName = AllParamsClasses.item(i).children.getParamName //getElementsByTagName("input")[0] //("getParamName")
+      let paramType = AllParamsClasses.item(i).children.getParamType // getElementsByTagName("input")[1] //("getParamType") 
+      if(paramName.value.length > 0  &&  paramType.value.length > 0){
+      isParamsAdder = isParamsAdder + "[" + paramType.value + "|" + paramName.value +"]|\n";
+      }
+    }
+    if (isParamsAdder.length > 0) {
+      message_to_send = message_to_send + "PARAMS_STRING{"+returnType.value + "}|\n";
+    }
+    alert('SENDING ARRAY: ' + message_to_send)
+    webSocket.send(message_to_send)
+  }
+  
+  // interfaces
+  function myFunction() {
+    sendm();
+  }
+
+  function save_func_val(){
+
+    let FuncName_ToChange = document.getElementById("getFuncIdTo_Change");
+    generatedCodeVal.value = generatedCodeVal.value.replace(FuncName.value, FuncName_ToChange.value)
+    FuncName.value = FuncName_ToChange.value
+    FuncName_ToChange.value = ""
+  }
+</script>
+
+
+</html>

@@ -237,7 +237,7 @@ BIG BORDER
 BIG BORDER
 */
 
-func (ctx *BaseConnection) CreateFuncArgs(Task_id string, args [][]string) {
+func (ctx *BaseConnection) CreateFuncArgs(Task_id int64, args [][]string) {
 	var arg_types []string = []string{}
 	var arg_names []string = []string{}
 
@@ -246,7 +246,7 @@ func (ctx *BaseConnection) CreateFuncArgs(Task_id string, args [][]string) {
 		arg_types = append(arg_types, args[vasl][0])
 	}
 
-	var insCode string = fmt.Sprintf(`INSERT INTO "FunctionArgs"(task_id, args_names, args_types) VALUES(%s,'{%s}', '{%s}')`, Task_id, strings.Join(arg_names, ", "), strings.Join(arg_types, ", "))
+	var insCode string = fmt.Sprintf(`INSERT INTO "FunctionArgs"(task_id, args_names, args_types) VALUES(%d,'{%s}', '{%s}')`, Task_id, strings.Join(arg_names, ", "), strings.Join(arg_types, ", "))
 	_, errd := ctx.dbOb.Exec(insCode)
 	if errd != nil {
 		panic(errd)
@@ -259,24 +259,32 @@ func (ctx *BaseConnection) CreateFuncArgs(Task_id string, args [][]string) {
 	// 	);`
 }
 
+type Gotter struct {
+	gott int64
+}
+
 func (ctx *BaseConnection) CreateFuncDec(task_name_id string, ret_val_type string) int64 {
 	// can insert both func and task os both of it comes from one values
 	var insCode string = fmt.Sprintf(
-		`INSERT INTO "Tasks"(task_name_id, text) 
-		VALUES('%s','%s') RETURNING id`, task_name_id, "")
+		`INSERT INTO "Tasks"(task_name_id, text, tasktype)
+		VALUES('%s','%s', %d) RETURNING id`, task_name_id, "", 2)
 
-	given_task_id, _ := ctx.dbOb.Exec(insCode)
-	got, _ := given_task_id.LastInsertId()
-
+	// _, err2 := ctx.dbOb.Query(`SELECT id, args_names, args_types FROM "FunctionArgs" WHERE task_id = $1 LIMIT 1`, 3)
+	// if err2 != nil {
+	// 	panic("errr")
+	// }
+	var ids int64
+	err := ctx.dbOb.QueryRow(insCode).Scan(&ids) //given_task_id, _ :=
+	fmt.Println("GOTT: ", ids, err)
 	var ins2_Code string = fmt.Sprintf(
 		`INSERT INTO "Functions"(task_id, func_name, return_value) 
-		VALUES(%s, '%s', '%s')`, got, task_name_id, ret_val_type)
+		VALUES(%d, '%s', '%s')`, ids, task_name_id, ret_val_type)
 
 	_, errd := ctx.dbOb.Exec(ins2_Code)
 	if errd != nil {
 		panic(errd)
 	}
-	return got
+	return ids
 	// `CREATE TABLE IF NOT EXISTS "Functions"(
 	// 	id serial primary key,
 	// 	task_id integer REFERENCES "Tasks"(id),

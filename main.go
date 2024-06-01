@@ -39,7 +39,7 @@ import (
 func BaseCheck() {
 	//baseCalls.BaseConnection
 	isid := baseCalls.GetBase()
-	fmt.Println(isid.GetTaskById(2))
+	fmt.Println("id ", isid.GetTaskById(2))
 }
 
 func main() {
@@ -159,9 +159,12 @@ func main() {
 	// var CheckerTwo string = fmt.Sprintf("Apple%s", CheckerText, "Txt2", "Txt3")
 	// fmt.Println(CheckerTwo)
 	// chtest.GetSessionId("cpp")
-	// WebRunner()
-	CodeRunner()
-
+	WebRunner()
+	// CodeRunner()
+	// BaseCheck()
+	// var bsva bs.BaseConnection = bs.GetBase()
+	// // fmt.Println(bsva.CreateFuncDec("CHECKERNAME", "int"))
+	// bsva.CreateFuncArgs(int64(42), [][]string{{"int", "checker"}})
 }
 
 func OnlineRunner() {
@@ -180,7 +183,7 @@ func OnlineRunner() {
 }
 
 func CodeRunner() {
-	CodeGenerator.Checker("", "cpp", false)
+	CodeGenerator.GeneratorOfPrompt("", "cpp", false)
 }
 
 func CppCodeCreator() {

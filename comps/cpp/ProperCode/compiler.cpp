@@ -65,7 +65,6 @@ int main(){
 	// int  dd[1][2] = {{1, 2}};
 	// cout << dd << endl << *(*(dd)) << endl << *(*(dd)+1) << endl << dd+1<< endl << dd + 2;
 	// checkerdd();
-
     std::vector<int>::iterator it;
     vector<int> dd = {1 , 2, 3};
 

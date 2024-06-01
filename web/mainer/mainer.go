@@ -5,11 +5,13 @@ import (
 	"net/http"
 	"reflect"
 	"strconv"
+	"strings"
+
+	inputing "ep/Execs"
+	gn "ep/Execs/GENERATE_TASKS"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-
-	inputing "ep/Execs"
 )
 
 var messagesd = make(chan string, 1)
@@ -27,11 +29,61 @@ func Runnersss() {
 
 	// BOTH TO GENERATED CODE
 	mod.GET("/cdgen", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.tmpl", gin.H{"OUTVAL": "Click on RUN button to see the output"})
+		c.HTML(http.StatusOK, "taskCreateFrom.html", gin.H{})
 	})
 
+	// EACH GENERATED TASK FIRSTLY COMES TO HERE AND IT RETURNS BACK TO  /CDGEN
+	mod.GET("/code_generate_attempt", func(c *gin.Context) {
+		ups.CheckOrigin = func(r *http.Request) bool { return true }
+		con, err := ups.Upgrade(c.Writer, c.Request, nil)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("Connected to js: ", con.RemoteAddr())
+		defer con.Close()
+		for {
+			fmt.Println("waiting sent message...")
+			vv, message_get_from, err := con.ReadMessage()
+
+			if err != nil {
+				panic(err)
+			}
+
+			fmt.Println("message type: ", vv)
+			fmt.Println("sent array type message: ", strconv.Itoa(vv))
+
+			if len(message_get_from) > 3 {
+
+				var PromptText string = ""
+				var mess_splits []string = strings.Split(string(message_get_from), "|")
+				for v := 0; v < len(mess_splits); v++ {
+					if len(mess_splits[v]) > len("PROMPT_STRING") {
+						if mess_splits[v][:len("PROMPT_STRING")] == "PROMPT_STRING" {
+							PromptText = mess_splits[v][len("PROMPT_STRING")+1 : len(mess_splits[v])-1]
+						}
+					}
+				}
+
+				properCodeFetch, func_name, ret_val, params := gn.GeneratorOfPrompt(PromptText, "cpp", false)
+				var isRetString string = ""
+				isRetString = isRetString + "|genCode:" + properCodeFetch
+				isRetString = isRetString + "|func_name:" + func_name
+				isRetString = isRetString + "|return_val:" + ret_val
+
+				var StringedParams []string = []string{}
+				for _, vad := range params {
+					StringedParams = append(StringedParams, "{"+vad[0]+"|"+vad[1]+"}")
+				}
+
+				isRetString = isRetString + "|params:[" + strings.Join(StringedParams, ", ") + "]"
+				con.WriteMessage(vv, []byte(isRetString))
+			}
+		}
+	})
+
+	// IT TO SAVE THE LAST GEN RESULT
 	mod.POST("/cdgen", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.tmpl", gin.H{"OUTVAL": "Click on RUN button to see the output"})
+		c.HTML(http.StatusOK, "taskCreateFrom.tmpl", gin.H{})
 	})
 
 	mod.GET("", Main)

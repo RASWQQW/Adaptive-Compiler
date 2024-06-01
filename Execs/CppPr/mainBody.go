@@ -6,6 +6,7 @@ import (
 	"ep/Execs/methods"
 	"ep/LevelFuncs"
 	_ "ep/comps/cpp"
+	"sync"
 
 	mt "ep/Execs/methods"
 	obj "ep/Execs/obj"
@@ -150,6 +151,7 @@ var BatchStatus int = 0
 
 // SINGLE INS GLOBAL VALUES
 var GRetFunc []string = []string{}
+var TimeLockerMutex sync.Mutex
 
 func codeSaving(
 	LoCode string,
@@ -190,10 +192,12 @@ func codeSaving(
 			GetTimeCalced,
 			vals.Val2,
 			map[string]any{"CommonPath": CommonPath, "ProfileObj": *Profile, "filename": vals.Val1, "lang": "cpp", "code": vals.Code},
-			BotCompiler.WebSocketRunner) //Profile WebSocketRunner
+			BotCompiler.WebSocketRunner,
+			TimeLockerMutex) //Profile WebSocketRunner
 	}
 	properCompRes := <-vvd2
 	userCompRes := <-vdd1
+	fmt.Println("Gotta be here: ", properCompRes, userCompRes)
 
 	// COMPILATION OF CODE VIA ONLINE COMPILER WEBSOCKET GOES AFTER API SO IT WASTES  A LOT MORE TIME THAN API
 	// COME AT FRONT OF API IN ADVANCE TO CHECK ITS ENDED ALREADY
@@ -204,21 +208,24 @@ func codeSaving(
 				GetTimeCalced,
 				vdd1,
 				map[string]any{"lang": LANG_G, "code": staticHeader + "\n" + LoCode + "\n" + callMain},
-				compil.WebSocketRunner) //Profile
+				compil.WebSocketRunner,
+				TimeLockerMutex) //Profile
 		} else {
 			go BotCompiler.TimeLimitCompiler(
 				GetTimeCalced,
 				vvd2,
-				map[string]any{"lang": LANG_G, "code": staticHeader + "\n" + ProperBaseCode + "\n" + callMain},
-				compil.WebSocketRunner) //Profile
+				map[string]any{"Locker": TimeLockerMutex, "lang": LANG_G, "code": staticHeader + "\n" + ProperBaseCode + "\n" + callMain},
+				compil.WebSocketRunner,
+				TimeLockerMutex) //Profile
 		}
 	}
 
-	if len(userCompRes[1]) > 0 || len(properCompRes[1]) > 0 {
+	if (len(userCompRes[1]) > 0 || len(properCompRes[1]) > 0) &&
+		strings.Contains(properCompRes[1]+userCompRes[1], "-") { //make sure its error code
 		if len(userCompRes) > 2 && userCompRes[2] == "1" {
 			return userCompRes[1]
 		}
-		return "Error: " + userCompRes[1] + properCompRes[1]
+		return "!" + userCompRes[0] + "\n" + properCompRes[0]
 	} else {
 		//HAVE TO MAKE PROPER CHECK OF CORRECTNESS STILL
 		if strings.ReplaceAll(properCompRes[0], " ", "||") != strings.ReplaceAll(userCompRes[0], " ", "||") {

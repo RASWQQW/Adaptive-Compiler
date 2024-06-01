@@ -22,6 +22,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -53,12 +54,13 @@ func TimeLimitCompiler(
 	sleepTime float32,
 	ReturnValue chan []string,
 	params map[string]any,
-	RunFunc func(map[string]any, chan []string) []string) {
+	RunFunc func(map[string]any, chan []string, sync.Mutex) []string,
+	lc sync.Mutex) {
 	if RunFunc == nil {
 		//It runs func of request for default if there is no given func
 		RunFunc = CompilerRequester
 	}
-	go RunFunc(params, ReturnValue) // Runs in background until code it ends or limit time comes to an end
+	go RunFunc(params, ReturnValue, lc) // Runs in background until code it ends or limit time comes to an end
 	time.Sleep(time.Second * time.Duration(sleepTime))
 	//if the given time ends fun will set value  to chan by itself
 	ReturnValue <- []string{"Time limit exceeded", "TIMELIMIT", "1"}
@@ -380,7 +382,8 @@ func CodeBatcher(gatherer *LevelFuncs.BatchGathererList, stat string) { //(addCo
 		"\n" + out_MainFuncChanger
 
 	res_getter := make(chan []string)
-	WebSocketRunner(map[string]any{"lang": "cpp", "code": RetCode}, res_getter)
+	var lsc sync.Mutex
+	WebSocketRunner(map[string]any{"lang": "cpp", "code": RetCode}, res_getter, lsc)
 
 	// THERE HAVE TO STAY EXTRACTING OF PROPER RESULT FROM PRINTED CODE
 
@@ -411,7 +414,7 @@ func GetBoardData(username string) int {
 	return resd
 }
 
-func CompilerRequester(Values map[string]any, RetVals chan []string) []string {
+func CompilerRequester(Values map[string]any, RetVals chan []string, lsc sync.Mutex) []string {
 	var regLink string = "https://api.jdoodle.com/v1/execute"
 	var clId string = ""   //"b86eafbab040cfd06f729b4f7d233f2d"
 	var cl_sec string = "" //"85abad0125e7efdfeb9db2deb1b4155b919c65963deb43a0391ee6209cc71ba9"
@@ -434,8 +437,8 @@ func CompilerRequester(Values map[string]any, RetVals chan []string) []string {
 	// 	}
 	// }
 	if len(clId) < 1 {
-		RetVals <- []string{"-105"}
-		return []string{"-105"}
+		RetVals <- []string{"no token", "-105"}
+		return []string{"no token", "-105"}
 	}
 
 	getProf := reflect.ValueOf(Values["ProfileObj"])
@@ -483,8 +486,8 @@ func CompilerRequester(Values map[string]any, RetVals chan []string) []string {
 		}
 	}
 
-	RetVals <- []string{rVal.Output, fmt.Sprintf("Error: %s", "1")} //rVal.Output
-	return []string{rVal.Output, fmt.Sprintf("Error: %s", "1")}     //rVal.Output
+	RetVals <- []string{rVal.Output, fmt.Sprintf("Error: %s", "-108")} //rVal.Output
+	return []string{rVal.Output, fmt.Sprintf("Error: %s", "-108")}     //rVal.Output
 	// panic("Code is not proper")
 }
 
@@ -517,9 +520,13 @@ func Junk() {
 	json.NewDecoder(query.Body).Decode(&res)
 }
 
-func WebSocketRunner(params_c map[string]any, returnValue chan []string) []string /*get 0 result, 1 status */ {
+func WebSocketRunner(params_c map[string]any, returnValue chan []string, lsc sync.Mutex) []string /*get 0 result, 1 status */ {
 	var lang string = LevelFuncs.ToString(params_c["lang"])
 	var code string = LevelFuncs.ToString(params_c["code"])
+
+	// lsc.Lock()
+	// defer lsc.Unlock()
+
 	if len(lang) < 1 {
 		lang = "cpp"
 	}
@@ -552,7 +559,8 @@ func WebSocketRunner(params_c map[string]any, returnValue chan []string) []strin
 				if len(strdd) > 0 {
 					fmt.Println("Out code(CONVERTED PROPER TO CHECK VERSION)>>")
 					fmt.Println(strdd)
-					returnValue <- []string{strdd, "RES"}
+					returnValue <- []string{strdd, ""}
+					fmt.Println("Settled vals:")
 					return []string{}
 
 				}
