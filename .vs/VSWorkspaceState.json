@@ -5,12 +5,13 @@
     "\\comps\\cpp",
     "\\comps\\cpp\\ProperCode",
     "\\Execs",
+    "\\Execs\\BotCompiler",
     "\\Execs\\CppPr",
     "\\LevelFuncs",
     "\\Task_creator",
     "\\testing",
     "\\variables"
   ],
-  "SelectedNode": "\\comps\\cpp\\ProperCode\\compiler.cpp",
+  "SelectedNode": "\\comps\\cpp\\ProperCode\\CPPexam.cpp",
   "PreviewInSolutionExplorer": false
 }

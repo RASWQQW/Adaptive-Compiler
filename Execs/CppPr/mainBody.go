@@ -6,7 +6,6 @@ import (
 	"ep/Execs/methods"
 	"ep/LevelFuncs"
 	_ "ep/comps/cpp"
-	"sync"
 
 	mt "ep/Execs/methods"
 	obj "ep/Execs/obj"
@@ -60,7 +59,6 @@ func CodeMatching(LoCode string, CurrentFuncName string, CurrentFuncReturnType s
 		if substr != "static" && substr != "" || slices.Contains([]string{"public", "private"}, substr) {
 			return "access type isn't relevant"
 		}
-
 		// LoCode = obj.Replacer([]string{"static"}, LoCode)
 		var namefullIndex int = stLen + len(coType) + 1 + len(CurrentFuncName)
 		fmt.Println(LoCode[stLen+len(coType)+1:namefullIndex], CurrentFuncName)
@@ -143,7 +141,7 @@ var CurrentFuncReturnType string = ""
 var LANG_G string = ""
 var Ncounter chan int = make(chan int, 1)
 var DELETEFOLDERNAMES chan []string = make(chan []string)
-var StaticStartCode string = "using namespace std;\n#include <iostream> \n#include <string> \n#include <array>\n\n\n"
+var StaticStartCode string = "using namespace std;\n#include <iostream> \n\n\n" //\n#include <string> \n#include <array>
 var BatchGatherList *LevelFuncs.BatchGathererList = &LevelFuncs.BatchGathererList{}
 
 // Batch compile main and important value
@@ -151,7 +149,11 @@ var BatchStatus int = 0
 
 // SINGLE INS GLOBAL VALUES
 var GRetFunc []string = []string{}
-var TimeLockerMutex sync.Mutex
+var TimeLockerMutex *LevelFuncs.MutexLog = &LevelFuncs.MutexLog{}
+
+// func CreateCPPCode(funcS []string) {
+
+// }
 
 func codeSaving(
 	LoCode string,
@@ -187,16 +189,18 @@ func codeSaving(
 	//go TimeLimitCompiler(GetTimeCalced, vvd2, map[string]any{"CommonPath": CommonPath, "ProfileObj": Profile, "filename": Profile.ProperCName}, cpp.Runner) //Profile
 
 	//RUNNING VALUES INP TIMELIMITED AND API COMPILERS
-	for _, vals := range []LevelFuncs.StrListStrChan{{Profile.UserCName, vdd1, useCode}, {Profile.ProperCName, vvd2, properCode}} {
+	for _, vals := range []LevelFuncs.StrListStrChan{{Profile.UserCName, vdd1, useCode, "UserCode"}, {Profile.ProperCName, vvd2, properCode, "ProperCode"}} {
 		go BotCompiler.TimeLimitCompiler(
 			GetTimeCalced,
 			vals.Val2,
-			map[string]any{"CommonPath": CommonPath, "ProfileObj": *Profile, "filename": vals.Val1, "lang": "cpp", "code": vals.Code},
-			BotCompiler.WebSocketRunner,
+			map[string]any{"CommonPath": CommonPath, "ProfileObj": *Profile, "filename": vals.Val1, "lang": "cpp", "code": vals.Code, "CodeType": vals.Val3},
+			BotCompiler.CompilerRequester,
 			TimeLockerMutex) //Profile WebSocketRunner
 	}
+
 	properCompRes := <-vvd2
 	userCompRes := <-vdd1
+
 	fmt.Println("Gotta be here: ", properCompRes, userCompRes)
 
 	// COMPILATION OF CODE VIA ONLINE COMPILER WEBSOCKET GOES AFTER API SO IT WASTES  A LOT MORE TIME THAN API
@@ -230,7 +234,7 @@ func codeSaving(
 		//HAVE TO MAKE PROPER CHECK OF CORRECTNESS STILL
 		if strings.ReplaceAll(properCompRes[0], " ", "||") != strings.ReplaceAll(userCompRes[0], " ", "||") {
 			// WrongCode = true
-			return "Input: " + Inputs + "\n Proper Output: " + properCompRes[0] + "\nYour output: " + userCompRes[0]
+			return "Input: " + Inputs + "\n Proper Code output: " + properCompRes[0] + "\nYour code output: " + userCompRes[0]
 		} else {
 			// Where all of code is proper
 			fmt.Printf("User result: %s \nProper Code result: %s\n\n", userCompRes[0], properCompRes[0])
@@ -423,7 +427,8 @@ func CompilingResult(
 					var Profile = compil.SaveProfile(LANG_G, Ncounter)
 					var BatchGathererIns *LevelFuncs.BatchGatherer = &LevelFuncs.BatchGatherer{
 						ParamBuncher: ParamBunch, ParamTimeLimitToRun: GetTimeCalcedForCollect,
-						CllCodeParams: DataTypes, CllUserCode: LoCode, CllProperCode: ProperBaseCode, CllProfile: Profile, CllReturns: giver}
+						CllCodeParams: DataTypes, /* TWO OF THESE VALUES ARE ONE EXAMPLER OR CONSTANT FOR ONE SESSION THEREFORE IN CODE FOR COMPILATION WILL WRITTEN ONCE CllUserCode: LoCode, CllProperCode: ProperBaseCode */
+						CllProfile:    Profile, CllReturns: giver}
 					BatchGatherList.Collection = append(BatchGatherList.Collection, BatchGathererIns)
 
 				} else {
@@ -454,6 +459,9 @@ func CompilingResult(
 			BatchGatherList.FuncParamNamesAndTypes = FuncTypesAndName
 			BatchGatherList.CllTypePassingString = strings.Join(FuncParamsPass, ", ")
 			BatchGatherList.FuncReturnType = CurrentFuncReturnType
+			BatchGatherList.CllUserCode = LoCode
+			BatchGatherList.CllProperCode = ProperBaseCode
+
 			compil.CodeBatcher(BatchGatherList, StaticStartCode) // The thing runs all the stuffs of Batching
 		}
 
@@ -465,7 +473,7 @@ func CompilingResult(
 				if !strings.Contains(copier, "Good") {
 					// if one of them already gives error it returns it
 					// code must be checked sequantially due to compelexity rate of parameters
-					go DeleteAllWhenDone(v+1, results, NGatherer)
+					// go DeleteAllWhenDone(v+1, results, NGatherer)
 					return copier
 
 				}
@@ -473,7 +481,7 @@ func CompilingResult(
 			}
 		}
 		//IF ITS  WITH ONLY HAVING A ALL PROPER OUT
-		go DeleteAllWhenDone(-1, results, NGatherer)
+		// go DeleteAllWhenDone(-1, results, NGatherer)
 
 		return "Your code is proper as well"
 	}
@@ -483,7 +491,7 @@ func CompilingResult(
 	// }
 	//Lately goes other stuff like looping concerning inner types and giving it like random params
 	// and relatively save and check its result
-	return "Noting were checked"
+	return "Nothing were checked"
 }
 
 // DELETING ALWAYS ALL VALUES NO MATTER WRONG OR CORRECT

@@ -7,7 +7,7 @@ using namespace std;
 #include <sstream>
 #include <bits/stdc++.h>
 #include <stdio.h>
-#include <windows.h> // for EXCEPTION_ACCESS_VIOLATION
+// #include <windows.h> // for EXCEPTION_ACCESS_VIOLATION
 #include <excpt.h>
 
 //https://en.cppreference.com/w/cpp/thread/thread/native_handle
@@ -26,22 +26,22 @@ auto ffer = [](int timesd){
 // ALL OF THEM FUNC_PREPARE VALUES AND STATIC
 // typedef string ret_originType;
 
-int filter(unsigned int code, struct _EXCEPTION_POINTERS *ep)
-{
-    cout << "in filter.";
-    if (code == EXCEPTION_ACCESS_VIOLATION)
-    {
-        cout << "caught AV as expected.";
-        return EXCEPTION_EXECUTE_HANDLER;
-    }
-    else
-    {
-        cout << "didn't catch AV, unexpected.";
-        return EXCEPTION_CONTINUE_SEARCH;
-    };
-}
+// int filter(unsigned int code, struct _EXCEPTION_POINTERS *ep)
+// {
+//     cout << "in filter.";
+//     if (code == EXCEPTION_ACCESS_VIOLATION)
+//     {
+//         cout << "caught AV as expected.";
+//         return EXCEPTION_EXECUTE_HANDLER;
+//     }
+//     else
+//     {
+//         cout << "didn't catch AV, unexpected.";
+//         return EXCEPTION_CONTINUE_SEARCH;
+//     };
+// }
 
-typedef int** to_run_ret;
+typedef string to_run_ret;  // it must be changed each time to fit representer function
 typedef to_run_ret (*run_code_temp)(string, string[]); //  there we need just pass parameters of func when preparing
 double TIME_LIMIT = 3.13;   
 
@@ -57,7 +57,7 @@ template <class T> bool TypeHandler(const T &TypeChecker)
 template<typename T>
 void ValPrinter(T PrintType, string getRetVal[]){
     (getRetVal)[1] = "1";
-    getRetVal[0] = to_string(PrintType);
+    getRetVal[0] =  "" + PrintType + "";//to_string();
 }
      
 template <typename T, int W, int H>
@@ -96,8 +96,8 @@ void DArrayChecker(T *vals,  string getRetVal[]){
 }
 
 
-
-string Printerd(string PrintType, string PrintType2[]){
+template <typename D>
+string Printerd(D PrintType, string PrintType2[]){
     return PrintType;
 }
 
@@ -153,63 +153,72 @@ void transmitFunc(run_code_temp to_run,
             
             to_run_ret valer = to_run(parameter1, parameter2);
             // typedef std::remove_reference<decltype( **valer )>::type s1_remove_originType;
-
+            
             if(1 != 1){
 
             }
-            // else if (rep_type == "Printer"){
-            //     ValPrinter<to_run_ret>(valer, pointer);
-            // }    
-            else if (rep_type == "DDArrayChecker" ) {//&& std::is_pointer<s1_remove_originType>::value()
-                to_run_ret pointer_pass_val;
-                //https://en.cppreference.com/w/cpp/types/is_pointer#:~:text=std%3A%3Ais_pointer%20is%20a,value%20is%20equal%20to%20false.
+
+            /** PRINTER_TYPE_PUT_PLACE **/
+            
+            //--------Printer
+            else if (rep_type == "Printer"){
+                ValPrinter<to_run_ret>(valer, pointer);
+            }    
+
+            //--------DDArrayChecker
+            // else if (rep_type == "DDArrayChecker" ) {//&& std::is_pointer<s1_remove_originType>::value()
+            //     to_run_ret pointer_pass_val;
+            //     //https://en.cppreference.com/w/cpp/types/is_pointer#:~:text=std%3A%3Ais_pointer%20is%20a,value%20is%20equal%20to%20false.
                 
-                int setter_sizer = sizeof(valer) / sizeof(valer[0]);
+            //     int setter_sizer = sizeof(valer) / sizeof(valer[0]);
 
-                //BEFORE EXPLICIT CONVERT                
-                // pointer_pass_val = new ret_originType *[setter_sizer];
-                // for(int s = 0; s < setter_sizer; s++){
-                //     pointer_pass_val[s] = valer[s];
-                // }
+            //     //BEFORE EXPLICIT CONVERT                
+            //     // pointer_pass_val = new ret_originType *[setter_sizer];
+            //     // for(int s = 0; s < setter_sizer; s++){
+            //     //     pointer_pass_val[s] = valer[s];
+            //     // }
 
-                // typedef std::remove_reference<decltype( *valer )>::type deffer;
-                // if (typeid(deffer).name() != typeid(ret_originType).name()){
+            //     // typedef std::remove_reference<decltype( *valer )>::type deffer;
+            //     // if (typeid(deffer).name() != typeid(ret_originType).name()){
 
-                // to_run_ret (&conv_type)[][(sizeof(valer[0]) / sizeof(ret_originType))] = valer; 
-                // HERE I CAN WRITE VIA STRING BUT PROBLEM IS ON ONE LEVEL POINTER
-                // NOT IN THE SECOND, SO I HAVE TO CHECK IN FIRST AND DETERMINE IT HAS VALUE OR NOT
-                std::stringstream string_tug;
-                typedef std::remove_reference<decltype( **valer )>::type ret_originType;
-                int enrichStat = 50;
-                int CountGetter = 0;
-                for(int dds = 0; dds < enrichStat; dds++){
-                    __try {
-                        try{
-                            if(to_string(valer[dds][0]).size() >= 6){  // have to set some  limit how generated values are will be passed below 1kk
-                                break;
-                            }
-                            CountGetter = CountGetter + sizeof(valer[0]);
-                        }
-                        catch (const exception &exp){
-                            string_tug << exp.what();
-                            if(string_tug.str().find("segmentation") != std::string::npos){
-                                if(string_tug.str().find("fault") != std::string::npos){
-                                    break;
-                                }
-                            }
-                        }
-                    } __except(filter(GetExceptionCode(), GetExceptionInformation())){
-                        std::cout << "caught" << std::endl;
-                    }   
+            //     // to_run_ret (&conv_type)[][(sizeof(valer[0]) / sizeof(ret_originType))] = valer; 
+            //     // HERE I CAN WRITE VIA STRING BUT PROBLEM IS ON ONE LEVEL POINTER
+            //     // NOT IN THE SECOND, SO I HAVE TO CHECK IN FIRST AND DETERMINE IT HAS VALUE OR NOT
+            //     std::stringstream string_tug;
+            //     typedef std::remove_reference<decltype( **valer )>::type ret_originType;
+            //     int enrichStat = 50;
+            //     int CountGetter = 0;
+            //     for(int dds = 0; dds < enrichStat; dds++){
+            //         __try {
+            //             try{
+            //                 if(to_string(valer[dds][0]).size() >= 6){  // have to set some  limit how generated values are will be passed below 1kk
+            //                     break;
+            //                 }
+            //                 CountGetter = CountGetter + sizeof(valer[0]);
+            //             }
+            //             catch (const exception &exp){
+            //                 string_tug << exp.what();
+            //                 if(string_tug.str().find("segmentation") != std::string::npos){
+            //                     if(string_tug.str().find("fault") != std::string::npos){
+            //                         break;
+            //                     }
+            //                 }
+            //             }
+            //         } __except(filter(GetExceptionCode(), GetExceptionInformation())){
+            //             std::cout << "caught" << std::endl;
+            //         }   
                     
-                }
-                // int (*val)[10][10] = &valer;
-                // std::array<valer>();
+            //     }
+            //     // int (*val)[10][10] = &valer;
+            //     // std::array<valer>();
 
-                std::cout <<  "ss: " << CountGetter << " before run size: " << sizeof(*valer) << "  " << sizeof(valer[0]) << "||" <<  sizeof(valer[0]) / sizeof(ret_originType) << endl;
-                DDArrayChecker<ret_originType, sizeof(CountGetter) / sizeof(valer[0]), sizeof(valer[0]) / sizeof(ret_originType)>(valer, pointer);
-                // }
-            }
+            //     std::cout <<  "ss: " << CountGetter << " before run size: " << sizeof(*valer) << "  " << sizeof(valer[0]) << "||" <<  sizeof(valer[0]) / sizeof(ret_originType) << endl;
+            //     DDArrayChecker<ret_originType, sizeof(CountGetter) / sizeof(valer[0]), sizeof(valer[0]) / sizeof(ret_originType)>(valer, pointer);
+            //     // }
+            // }
+
+
+            //--------DArrayChecker
             // else if (rep_type == "DArrayChecker"){
             //     to_run_ret pointer_pass_val;
             //     typedef std::remove_reference<decltype( *pointer_pass_val )>::type ret_originType;
@@ -232,7 +241,7 @@ void transmitFunc(run_code_temp to_run,
             }        
         }
         std::chrono::time_point end_t = std::chrono::steady_clock::now();
-        string diff = to_string((float)(std::chrono::duration_cast<std::chrono::milliseconds>(end_t-begin_t).count()) / 1000);
+        string diff = to_string((float)(std::chrono::duration_cast<std::chrono::milliseconds>(end_t-begin_t).count()) / 10000);
         //cout <<  "END SEC: " << st << " get pointer: " << pointer[0]  << "Time diff: " << diff<< endl;
 
         if(pointer[1] != "1" && pointer[1] == "0"){
@@ -271,10 +280,11 @@ int main(){
     params values__lister[10] = {{"1", {"2"}}, {"1", {"2"}}, {"1", {"2"}}, {"1", {"2"}}, {"1", {"2"}}, {"1", {"2"}}, {"1", {"2"}}, {"1", {"2"}}, {"1", {"2"}}, {"1", {"2"}}};
     string FuncIds[10] = {"FuncId1", "FuncId2", "FuncId1", "FuncId2", "FuncId1", "FuncId2", "FuncId1", "FuncId2", "FuncId1", "FuncId2"};
     float given_time_limits[10] = {3.12, 3.12, 3.12, 3.12, 3.12, 3.12,3.12, 3.12,3.12, 3.12};
+    
     vector<run_code_temp> objectsd;// = {CodePrinter, CodePrinter, CodePrinter, CodePrinter, CodePrinter, CodePrinter, CodePrinter, CodePrinter, CodePrinter, CodePrinter};
 
-    for(int v = 0; v < 10; v++){
-        objectsd.push_back(CodePrinter2d);
+    for(int v = 0; v < 3; v++){
+        objectsd.push_back(Printerd); //CodePrinter2d
     }
     
     // after forming values
@@ -285,7 +295,7 @@ int main(){
     int valSent = 0;
     // promise<vector<string>> promiser;
     // std::future<vector<string>> ff = promiser.get_future();
-    for(int v = 0; v < 1; v ++){
+    for(int v = 0; v < 3; v ++){
         // THERE IT GOES VIA RUNTIME AND 
         // EACH PASSING ARGUMENT WILL HAVE PARAM NAME AS WELL WHEN PASSING
         catcher.push_back({FuncIds[v], "-1", "-1"});
@@ -293,7 +303,17 @@ int main(){
             given_time_limits - is unique time limit collection of each func
         */
         
-        threads.push_back(std::thread(transmitFunc, objectsd[v], /*have to come in string way of func*/ "DDArrayChecker", &catcher, FuncIds[v], v, given_time_limits[v], /**//* further goes changed values */values__lister[valSent].val1, values__lister[valSent].val2));//
+        threads.push_back(std::thread(
+            transmitFunc, 
+            objectsd[v], /*have to come in string way of func*/
+            "Printer", // represent func name 
+            &catcher, 
+            FuncIds[v], 
+            v, 
+            given_time_limits[v], /**//* further goes changed values */
+            values__lister[valSent].val1, 
+            values__lister[valSent].val2
+            ));//
 
         if (v % 2 == 1) {
             valSent = valSent + 1;
@@ -311,7 +331,7 @@ int main(){
 
     // fetching the results
 
-    int conc = 0; //to handle finsihed funcs
+    int conc = 0; //to handle finished funcs
     int conc2 = conc; // to make cycle on func check proceess
     bool istostop = false;
     string funcId = "";

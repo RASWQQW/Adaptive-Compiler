@@ -159,22 +159,25 @@ func (ctx *BaseConnection) GetTaskByName(values *obj.Career) { //(int, string, s
 	// }
 
 	fmt.Println("checking: ", ctx.dbOb.Ping(), task_name_id)
-	res, err := ctx.dbOb.Query(`SELECT "id", "tasktype" FROM "Tasks" WHERE "Tasks".task_name_id = $1 LIMIT 1`, task_name_id)
+	res, err := ctx.dbOb.Query(`SELECT "id", "tasktype", "text" FROM "Tasks" WHERE "Tasks".task_name_id = $1 LIMIT 1`, task_name_id)
 
 	if err != nil {
 		panic(err)
 	} else {
+		var taskExp string
 		var retid int
 		var taskType int
 		var taskTypeVal []map[string]string
 		for res.Next() {
-			res.Scan(&retid, &taskType)
+			res.Scan(&retid, &taskType, &taskExp)
 			taskTypeVal = ctx.Reader(false, []string{"type_name"}, "TaskTypes", string(fmt.Sprintf("WHERE id = %d", taskType)))
 			// fmt.Println("Current id in for scan: ", retid)
 		}
 
 		values.OUTS["task_type"] = fmt.Sprintf("%s", taskTypeVal[0]["type_name"])
 		values.OUTS["task_id"] = fmt.Sprintf("%d", retid)
+		values.OUTS["task_exp"] = fmt.Sprintf("%s", taskExp)
+
 		// return retid, taskTypeVal[0]["type_name"], task_name_id
 	}
 }
@@ -203,8 +206,6 @@ func (ctx *BaseConnection) GetTaskById(task_id int) string {
 }
 
 /*
-
-
 // func (ctx *BaseConnection) ExecuteMany(resqs []string) {
 // 	res, _ := ctx.dbOb.Query(fmt.Sprintf(`%s`, string(strings.Join(resqs, "; "))))
 // 	for val := true; val; val = res.NextResultSet() {
@@ -229,14 +230,11 @@ func (ctx *BaseConnection) GetTaskById(task_id int) string {
 
 // }
 
-
-
 THERE COMES CREATE FUNCTION TO CREATE PART FUNCTIONS
 BIG BORDER
 BIG BORDER
 BIG BORDER
 */
-
 func (ctx *BaseConnection) CreateFuncArgs(Task_id int64, args [][]string) {
 	var arg_types []string = []string{}
 	var arg_names []string = []string{}

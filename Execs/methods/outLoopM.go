@@ -113,7 +113,7 @@ func ExecTimeComp(GenTypes [][3]string, RetType []string) float32 { //[0] param 
 	//return 20 // default value
 
 	if 1 == 1 {
-		return 21
+		return 300
 	}
 
 	var TypesExt []string = []string{}

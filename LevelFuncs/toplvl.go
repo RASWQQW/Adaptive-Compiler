@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"sync"
 )
 
 func main() {
@@ -51,6 +52,7 @@ type StrListStrChan struct {
 	Val1 string
 	Val2 chan []string
 	Code string
+	Val3 string
 }
 
 type ValType struct {
@@ -70,8 +72,6 @@ type BatchGatherer struct {
 	ParamTimeLimitToRun float32
 	ParamBuncher        [][3]string
 	CllCodeParams       string
-	CllUserCode         string
-	CllProperCode       string
 	CllReturns          chan string
 	CllProfile          *Profile
 	CllParamType        int // type of i/o based type 1 -> simple, 2 -> array,  3 ->  matrix
@@ -83,4 +83,10 @@ type BatchGathererList struct {
 	CllTypePassingString   string
 	FuncParamNamesAndTypes [][]string
 	FuncReturnType         string
+	CllUserCode            string
+	CllProperCode          string
+}
+
+type MutexLog struct { // to make referrable mutex in runtime
+	Ism sync.Mutex
 }

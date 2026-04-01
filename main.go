@@ -159,12 +159,16 @@ func main() {
 	// var CheckerTwo string = fmt.Sprintf("Apple%s", CheckerText, "Txt2", "Txt3")
 	// fmt.Println(CheckerTwo)
 	// chtest.GetSessionId("cpp")
-	WebRunner()
+	// WebRunner()
 	// CodeRunner()
 	// BaseCheck()
 	// var bsva bs.BaseConnection = bs.GetBase()
 	// // fmt.Println(bsva.CreateFuncDec("CHECKERNAME", "int"))
 	// bsva.CreateFuncArgs(int64(42), [][]string{{"int", "checker"}})
+	// SiteTester()
+	// SiteTester()
+	WebRunner()
+	SiteTester()
 }
 
 func OnlineRunner() {
@@ -172,8 +176,8 @@ func OnlineRunner() {
 	var cc int = 5 // amount of socket outputs varies
 	var outv_ = make(chan string, cc)
 	var inv_ = make(chan string, 1)
-
-	var cdedd string = "using namespace std;\n #include <iostream> \n#include <string> \n#include <array>\n\n\n\ndouble AddTwoNumbers(int a, int b){\n\treturn a + b;\n\t}\n\n\ntemplate<typename T>\n\t\tvoid Printer(T PrintType){\n\t\t\tcout << std::to_string(PrintType);\n\t\t}\n\nint main(){\n\tint a = 0;\nint b = 0;\n \n\nPrinter<double>(AddTwoNumbers(a=a, b=b));\n\n\n}"
+	//\n#include <string> \n#include <array>
+	var cdedd string = "using namespace std;\n #include <iostream> \n\n\n\ndouble AddTwoNumbers(int a, int b){\n\treturn a + b;\n\t}\n\n\ntemplate<typename T>\n\t\tvoid Printer(T PrintType){\n\t\t\tcout << std::to_string(PrintType);\n\t\t}\n\nint main(){\n\tint a = 0;\nint b = 0;\n \n\nPrinter<double>(AddTwoNumbers(a=a, b=b));\n\n\n}"
 	gotChan, err := strconv.Unquote(fmt.Sprintf(`"%s"`, cdedd))
 
 	fmt.Println(err)
@@ -208,10 +212,10 @@ func CppCodeCreator() {
 		ParamBuncher:        [][3]string{{"a", "int", "12"}, {"b", "int", "13"}},
 		ParamTimeLimitToRun: 15.1,
 		CllCodeParams:       "",
-		CllUserCode:         "double AddTwoNumbers(int a, int b){return a + b;}",
-		CllProperCode:       "double AddTwoNumbers(int a, int b){return a + b;}",
-		CllProfile:          prod,
-		CllReturns:          getter}
+		// CllUserCode:         "double AddTwoNumbers(int a, int b){return a + b;}",
+		// CllProperCode:       "double AddTwoNumbers(int a, int b){return a + b;}",
+		CllProfile: prod,
+		CllReturns: getter}
 
 	checker.Collection = append(checker.Collection, BatchGathererIns)
 	chtest.CodeBatcher(checker, "using namespace std;\n#include <iostream>\n\n\n")

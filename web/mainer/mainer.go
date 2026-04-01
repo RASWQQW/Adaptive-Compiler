@@ -4,11 +4,16 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 
 	inputing "ep/Execs"
 	gn "ep/Execs/GENERATE_TASKS"
+
+	"ep/Execs/obj"
+	lvl "ep/LevelFuncs"
+	bs "ep/base/abst"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -23,11 +28,30 @@ func Runnersss() {
 	var ups = websocket.Upgrader{} //ReadBufferSize: 1024, WriteBufferSize: 1024
 
 	mod.LoadHTMLGlob("web/mainer/temps/html/*")
-	mod.GET("/htesting", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.tmpl", gin.H{"OUTVAL": "Click on RUN button to see the output"})
+	mod.GET("/htesting/:topicname", func(c *gin.Context) {
+
+		var bss = bs.GetBase()
+
+		var topicName string = c.Param("topicname")
+		var crs = &obj.Career{INOUTS: map[string]any{"lang": "cpp", "task_name_id": topicName /*"AddTwoNumbers"*/}, OUTS: map[string]any{}}
+		bss.GetTaskByName(crs)
+		bss.GetProperCode(crs)
+		bss.GetFunction(crs)
+
+		var FindCode string = regexp.MustCompile("(.)+{").FindString(lvl.ToString(crs.OUTS["prop_code"]))
+		FindCode = strings.ReplaceAll(FindCode, "RET_TYPE", lvl.ToString(crs.OUTS["return_type"]))
+		FindCode = strings.ReplaceAll(FindCode, "FUNC", topicName)
+		c.HTML(http.StatusOK, "index.tmpl",
+			gin.H{
+				"TOPICS":        topicName,
+				"FUNCSTARTCODE": FindCode + "\n/*start writing code right here*/\n\n}", //double AddTwoNumbers (int a, int b){ return a + b; }
+				"TOPICNAME":     topicName,
+				"GIVENEXP":      crs.OUTS["task_exp"],
+				"OUTVAL":        "Click on RUN button to see the output"})
 	})
 
 	// BOTH TO GENERATED CODE
+	// IT IS THE INTERFACE TO SEE WHAT WAS GENERATED FROM PROMPT
 	mod.GET("/cdgen", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "taskCreateFrom.html", gin.H{})
 	})
@@ -82,7 +106,24 @@ func Runnersss() {
 	})
 
 	// IT TO SAVE THE LAST GEN RESULT
+	// IT IS TO SAVE THE LAST RESULTED GENERATION
 	mod.POST("/cdgen", func(c *gin.Context) {
+
+		//GETTING VALUES PARSED ONE AND AFTER
+		fmt.Println("Current request keys: ", c.Keys)
+		// var ProperCode string = ""
+		// var FuncName string = ""
+		// var ret_val_type string = ""
+		// var func_params [][]string = [][]string{}
+
+		for v := 0; v < len(c.Params); v++ {
+			fmt.Println("Gotten value: ", c.Params[v].Key, "  ", c.Params[v].Key)
+			if c.Params[v].Key == "FuncName" {
+
+			}
+		}
+
+		// gn.BasePart()
 		c.HTML(http.StatusOK, "taskCreateFrom.tmpl", gin.H{})
 	})
 

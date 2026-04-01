@@ -74,7 +74,7 @@
   <h1 style='font-size: 15px'>⟳GENERATE<h1>
 </div>
 
-<div id="SaveButton" style="cursor: pointer">
+<div id="SaveTheTaskToDB" style="cursor: pointer">
   <h1 style='font-size: 15px'>✔SAVE<h1>
 </div>
 
@@ -98,6 +98,7 @@
   document.getElementById("generateButton").addEventListener("click", myFunction);
   // document.getElementById("Add_params").addEventListener("click", AddButton);
   document.getElementById("save_func_name").addEventListener("click", save_func_val);
+  document.getElementById("SaveTheTaskToDB").addEventListener("click", saveTaskToDb);
 
   
   // alert("CONNECTED1")
@@ -245,6 +246,40 @@
     generatedCodeVal.value = generatedCodeVal.value.replace(FuncName.value, FuncName_ToChange.value)
     FuncName.value = FuncName_ToChange.value
     FuncName_ToChange.value = ""
+  }
+
+  function saveTaskToDb(){
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", "127.0.0.1:8080/cdgen");
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.setRequestHeader("Content-Type", "application/json");
+
+    xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4) // check if its ready to be sent 
+    {
+      console.log('status_code at saveTaskToDb' + xhr.status);
+      console.log('response text at saveTaskToDb' + xhr.responseText);
+    }};
+
+    // let promptText = document.getElementById("PromptText")
+    let concater = ""
+    let paramsString = "" 
+    for(ds = 0; ds < AllParamsClasses.length; ds++){    
+      paramsString = paramsString + concater + `"${AllParamsClasses[ds].children.getParamName}": "${AllParamsClasses[ds].children.getParamType}"` 
+      concater = ", "
+    }
+
+    let data = `{
+      "FuncName": "` +  FuncName.value  + `",
+      "ProperCode": "` + generatedCodeVal.value + `",
+      "PrompString": "` + Prompt.value  + `",
+      "FuncArgs": {` + paramsString + `},
+      "ReturnType": "` + returnType.value + `",
+       
+    }`;
+
+    console.log('Datas to be sent: ' + data)
+    xhr.send(data);
   }
 </script>
 

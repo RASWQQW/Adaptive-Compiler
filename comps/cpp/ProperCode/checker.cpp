@@ -3,6 +3,7 @@ using namespace std;
 #include <string>
 #include <cstring>
 #include <sstream>
+#include <vector>
 
 // template <int W>
 void PassFunc(int* vals, int sizef){
@@ -27,7 +28,7 @@ void PassFunc2D(int **(vals), int s1, int s2){
     }
 }
 
-int* checkerfunc(){
+static int* checkerfunc(){
     return new int[1]{1};    
 }
 
@@ -43,6 +44,8 @@ void by_pointer(int (*arr)[1][1])
 
 
 int main(){
+    std::vector<int> ddd = {12};
+    // int keeper[] = {};
     // for(int d = 0; d < 10; d++){
     //     float dd = (rand() % 5)* ((float)1 / 21);
     //     cout << dd << endl;
@@ -143,3 +146,16 @@ int main(){
     cout << trs.str();
     return 0;
 }   
+
+/*PROPER_CODE_STARTS*/
+#include <iostream>
+using namespace std;
+double Checker(double b, int power) {
+    return pow(b, power);
+}
+int main() {
+    double b = 2;
+    int power = 3;
+    cout << Checker(b, power) << endl;
+    return 0;
+}

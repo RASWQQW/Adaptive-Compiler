@@ -10,6 +10,7 @@ using namespace std;
 #include <random>
 #include <format>
 #include <bits/stdc++.h>
+#include <map>
 
 
 
@@ -19,6 +20,11 @@ int** AddTwoNumbers(int a, int b){
 	int **add;
 	return add;
 
+}
+
+int, int checker(){
+
+    return 12, 12;
 }
 
 
@@ -66,11 +72,28 @@ int main(){
 	// cout << dd << endl << *(*(dd)) << endl << *(*(dd)+1) << endl << dd+1<< endl << dd + 2;
 	// checkerdd();
     std::vector<int>::iterator it;
-    vector<int> dd = {1 , 2, 3};
+    vector<int> dd = {1, 2, 3};
 
-    it = std::find(dd.begin(), dd.end(), 16);
-    cout << to_string(dd.end() != it) << endl;
+    it = std::find(dd.begin(), dd.end(), 2);
+    if(dd.end() == it){
+        cout << "IIN" << endl;
+    }
+    cout << "IINs" << endl;
+        cout << int(5.9 / 2);    
+        return 0;
 
-    cout << int(5.9 / 2);    
-	return 0;
+
+
+    std::map<string, std::vector<int>> glob_vals = {};
+
+    int vd[1][2] = {};
+
+    glob_vals["checker"] = {sizeof(vd) / sizeof(vd[0]), (sizeof(vd[0]) / sizeof(int))}
+    
+    
+    // int val1 = sizeof(vd) / sizeof(vd[0]), (sizeof(vd[0]) / sizeof(int))
+
 }
+2
+20 / 10 = 2
+10 / 2  = 5 

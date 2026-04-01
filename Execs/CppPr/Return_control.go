@@ -118,6 +118,10 @@ func Cpp_control(FuncRetType string, compilerType int) []string { //FuncRetType 
 	FuncRetType = strings.ReplaceAll(FuncRetType, "[]", "[sizeof()]") // if there are empty valuus just fill
 	var forDeal string = strings.ReplaceAll(strings.ReplaceAll(strings.Join(strings.Split(FuncRetType, "]["), ", "), "[", ""), "]", "")
 
+	if 1 == 1 {
+		return []string{"-1"}
+	}
+
 	if len(mt.FindMatrix(FuncRetType)) > 0 {
 		return []string{fmt.Sprintf("%s<%s>", ddArrayCode[2], forDeal), Functions + "\n\n" + ddArrayCode[compilerType]}
 	} else if len(mt.FindList(FuncRetType)) > 0 {
@@ -126,5 +130,4 @@ func Cpp_control(FuncRetType string, compilerType int) []string { //FuncRetType 
 		return []string{fmt.Sprintf("%s<%s>", SimpleValue[2], forDeal), SimpleValue[compilerType]} //Functions + "\n\n" +
 
 	}
-	return []string{"-1"}
 }

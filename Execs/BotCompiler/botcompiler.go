@@ -20,9 +20,9 @@ import (
 	"os"
 	"os/exec"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -54,8 +54,8 @@ func TimeLimitCompiler(
 	sleepTime float32,
 	ReturnValue chan []string,
 	params map[string]any,
-	RunFunc func(map[string]any, chan []string, sync.Mutex) []string,
-	lc sync.Mutex) {
+	RunFunc func(map[string]any, chan []string, *LevelFuncs.MutexLog) []string,
+	lc *LevelFuncs.MutexLog) {
 	if RunFunc == nil {
 		//It runs func of request for default if there is no given func
 		RunFunc = CompilerRequester
@@ -65,6 +65,38 @@ func TimeLimitCompiler(
 	//if the given time ends fun will set value  to chan by itself
 	ReturnValue <- []string{"Time limit exceeded", "TIMELIMIT", "1"}
 }
+
+func retValFinder(returnType string, userCode string, FuncAddress string) (chCode []string) {
+	// -- returnType gotta come from the already written condition from db
+	// will create global adressor
+	// and will open it and write compiled values to it
+	// good luck then it make it
+
+	if strings.Contains(userCode, `return`) {
+		vs := regexp.MustCompile("**(int|char|string|double|decimal) [a-zA-Z]+.(").FindString(userCode)
+		if len(vs) < 0 {
+			rgx := regexp.MustCompile(`(return) ([a-zA-z]+);`)
+			var matches []string = rgx.FindAllString(userCode, -1)
+
+			var PutCode string = fmt.Sprintf(`
+			glob_vals["%s"] =  {sizeof(%s) / sizeof(%s[0]), sizeof(%s[0]) / sizeof(%s)};
+			`, FuncAddress, matches[1], matches[1], matches[1])
+
+			// no need of below line
+			// var PutCode string = fmt.Sprintf(`
+			// typedef std::remove_reference<decltype( **'%s )>::type ret_originTypeDD;
+			// DDArrayChecker<ret_originTypeDD, sizeof(%s) / sizeof(%s[0]), sizeof(%s[0]) / sizeof(%s)>()`, matches[1])
+
+			strings.ReplaceAll(userCode, matches[0]+` `+matches[1], PutCode+"\n"+matches[0]+` `+matches[1])
+
+		}
+	}
+	chCode = []string{userCode} // returns last modified code
+	return
+}
+
+// GET CHECKING EACH STROKE OF CODE TEMPORARLY MAINTAIN IT FOR // ARRAYS AND SIMPLE VALUES
+// HAVE TO FIGURE OUT HOW RETURNING TWO DIMENSIONAL ARRAY WORKS
 
 // The idea is making possible of running custom codes with their id of file
 // whether is user or proper code on one compile request
@@ -89,6 +121,7 @@ func CodeBatcher(gatherer *LevelFuncs.BatchGathererList, stat string) { //(addCo
 	var TypesToPassTemp string = ""
 	var ParamsToMainFuncTemp string = ""
 	var concator string = ""
+	var ReturnType int = 0
 
 	for _, valAdder := range gatherer.FuncParamNamesAndTypes {
 		TypesToPassTemp = concator + TypesToPassTemp + valAdder[0]                                       // temp  "string, int, ..."
@@ -110,7 +143,24 @@ func CodeBatcher(gatherer *LevelFuncs.BatchGathererList, stat string) { //(addCo
 			typedef to_run_ret (*run_code_temp)(` + TypesToPassTemp /*types only no need of names*/ + `); //  there we need just pass parameters of func when preparing
 			`
 
+	// HERE COMES CHECK OF CODE TYPE AND PUTTING RELEVANT SUB CONDITIONS
+	RepresenterMethod = append(RepresenterMethod, strings.Split(RepresenterMethod[0], "<")[0])
+	if strings.ToLower(RepresenterMethod[2]) == "DDArrayChecker" {
+		// there to put  condition into transmit func
+		ReturnType = 3
+		var NEC_LIBS string = `#include <map>\n#include <vector>`
+		var DDArrayMem string = `std::map<string, std::vector<int>> glob_vals = {};`
+
+		out_BuiltInLibs = out_BuiltInLibs + "\n" + NEC_LIBS + "\n//global values\n\n" + DDArrayMem
+	} else if strings.ToLower(RepresenterMethod[2]) == "DArrayChecker" {
+		ReturnType = 2
+
+	} else if strings.ToLower(RepresenterMethod[2]) == "Printer" {
+		ReturnType = 1
+	}
+
 	// CONSTRUCT TRANSMIT FUNC
+	// 169 code gotta get changed
 	var out_transmitFuncChanger string = `
 			void transmitFunc(run_code_temp to_run, 
 						void(*Representer)(string[], to_run_ret), 
@@ -128,7 +178,7 @@ func CodeBatcher(gatherer *LevelFuncs.BatchGathererList, stat string) { //(addCo
 				string pointer[2] = {"0", "0"};
 				///throw runtime_error("CHECK_TEXT!");
 				auto runner = [Representer, to_run, ` + ParamsToPassTemp + `, &pointer]() {
-					Representer(pointer, to_run(` + ParamsToPassTemp + `));};
+					Representer(pointer, to_run(` + ParamsToPassTemp + `));}; 
 
 				std::thread ddx(runner);
 				ddx.detach();
@@ -167,7 +217,7 @@ func CodeBatcher(gatherer *LevelFuncs.BatchGathererList, stat string) { //(addCo
 	//There Have to bes passed list of
 	//var FuncNamesLists string = `list<` + returnType + `(*)(` + passingParamsTypes + `)> RUNNFUNCS {`
 
-	var FuncsDeclarings string = ``
+	var FuncsDeclarings string = `` // this is an all dynamic user function code bodies
 
 	var ValuesListerRealValues string = "{"
 	var FuncIds string = ""
@@ -176,7 +226,13 @@ func CodeBatcher(gatherer *LevelFuncs.BatchGathererList, stat string) { //(addCo
 	var FuncsRunList []string = []string{} // there i have to show funcs list syntax
 
 	var funcCreate = func(name string, funcCode string) {
-		FuncsDeclarings = FuncsDeclarings + "\n\n" + funcCode[:strings.Index(funcCode, " ")-1] + name + funcCode[strings.Index(funcCode, "("):]
+		entered_func_body := funcCode[:strings.Index(funcCode, " ")-1] + name + funcCode[strings.Index(funcCode, "("):]
+		// code to change ddarray returning functions
+		if ReturnType == 3 {
+			entered_func_body = retValFinder(gatherer.FuncReturnType, entered_func_body, name)[0]
+		}
+		FuncsDeclarings = FuncsDeclarings + "\n\n" + entered_func_body
+
 		FuncsRunList = append(FuncsRunList, name) //fmt.Sprintf(gatherer.CllRepresentString, name, gatherer.CllTypePassingString)
 
 		// Add all funcIds to the list
@@ -186,10 +242,11 @@ func CodeBatcher(gatherer *LevelFuncs.BatchGathererList, stat string) { //(addCo
 		FuncIds = FuncIds + (name + "FuncId")
 	}
 
+	// GOTTA USE ONE EXAMPLIAR AND ITS POSSIBLE TO USE THEM IN DIFFERENT FLOW JUST USE ONE CODE OF USER AND PROPER CODE N.RASUL 9.25.2024
 	for vv := 0; vv < len(gatherer.Collection); vv = vv + 1 {
 		var nname string = gatherer.Collection[vv].CllProfile.Name
-		funcCreate(nname+"ProperBased", gatherer.Collection[vv].CllProperCode)
-		funcCreate(nname+"UserBased", gatherer.Collection[vv].CllUserCode)
+		funcCreate(nname+"ProperBased", gatherer.CllProperCode)
+		funcCreate(nname+"UserBased", gatherer.CllUserCode)
 	}
 
 	FuncNamesInLIst = strings.Join(FuncsRunList, ", ")
@@ -200,9 +257,10 @@ func CodeBatcher(gatherer *LevelFuncs.BatchGathererList, stat string) { //(addCo
 	var SIZE_COUNT int = len(gatherer.Collection)
 	concator = ""
 	for col := range gatherer.Collection {
+
 		var ttime float32 = gatherer.Collection[col].ParamTimeLimitToRun
 		if ttime < 3.40 {
-			gatherer.Collection[col].ParamTimeLimitToRun = ttime + 0.035 // there would little interval to get any trepsaces avoided
+			gatherer.Collection[col].ParamTimeLimitToRun = ttime + 0.035 // there would little interval to get any trespaces avoided
 		}
 		Time_limits_list = concator + Time_limits_list + LevelFuncs.ToString(ttime)
 
@@ -227,8 +285,7 @@ func CodeBatcher(gatherer *LevelFuncs.BatchGathererList, stat string) { //(addCo
 		ValuesListerRealValues = ValuesListerRealValues + (Values_temp + "}")
 
 	}
-
-	var out_MainFuncChanger string = `
+	var stringf = `
 	// I HAVE TO CREATE TRANSMIT FUNCTION TO PERFORM A REPRESENT FUNCTION
 	int main(){
 		
@@ -370,8 +427,8 @@ func CodeBatcher(gatherer *LevelFuncs.BatchGathererList, stat string) { //(addCo
 	//  I NEED TO TEST USING ALREADY CREATED OBJECTS SENDING INTO THIS METHOD
 	// IF I WANT TO TEST IT TO FULL CORRECTNESS
 
-	var RetCode string = ``
-	RetCode = stat + "\n\n" + out_BuiltInLibs +
+	// RetCodec := ``
+	RetCode := stat + "\n\n" + out_BuiltInLibs +
 		"\n\n" + out_ParamsDefStruct +
 
 		"\n" + RepresenterMethod[1] +
@@ -379,11 +436,13 @@ func CodeBatcher(gatherer *LevelFuncs.BatchGathererList, stat string) { //(addCo
 		"\n" + out_FuncReturnType +
 		"\n" + out_TypeDefs +
 		"\n" + out_transmitFuncChanger +
-		"\n" + out_MainFuncChanger
+		"\n" + stringf // have to check dont sure will it work or not, all matters is to check
+	// "\n" + out_MainFuncChanger
 
 	res_getter := make(chan []string)
-	var lsc sync.Mutex
+	var lsc = &LevelFuncs.MutexLog{}
 	WebSocketRunner(map[string]any{"lang": "cpp", "code": RetCode}, res_getter, lsc)
+	// WebSocketRunner(map[string]int{"lang": 1, "code": 1}, res_getter, lsc)
 
 	// THERE HAVE TO STAY EXTRACTING OF PROPER RESULT FROM PRINTED CODE
 
@@ -414,7 +473,7 @@ func GetBoardData(username string) int {
 	return resd
 }
 
-func CompilerRequester(Values map[string]any, RetVals chan []string, lsc sync.Mutex) []string {
+func CompilerRequester(Values map[string]any, RetVals chan []string, lsc *LevelFuncs.MutexLog) []string {
 	var regLink string = "https://api.jdoodle.com/v1/execute"
 	var clId string = ""   //"b86eafbab040cfd06f729b4f7d233f2d"
 	var cl_sec string = "" //"85abad0125e7efdfeb9db2deb1b4155b919c65963deb43a0391ee6209cc71ba9"
@@ -520,18 +579,19 @@ func Junk() {
 	json.NewDecoder(query.Body).Decode(&res)
 }
 
-func WebSocketRunner(params_c map[string]any, returnValue chan []string, lsc sync.Mutex) []string /*get 0 result, 1 status */ {
+func WebSocketRunner(params_c map[string]any, returnValue chan []string, lsc *LevelFuncs.MutexLog) []string /*get 0 result, 1 status */ {
 	var lang string = LevelFuncs.ToString(params_c["lang"])
 	var code string = LevelFuncs.ToString(params_c["code"])
 
-	// lsc.Lock()
-	// defer lsc.Unlock()
+	// time.Sleep(time.Millisecond * 100)
+	lsc.Ism.Lock()
+	defer lsc.Ism.Unlock()
 
 	if len(lang) < 1 {
 		lang = "cpp"
 	}
 	if len(code) < 1 {
-		code = `#include <iostream>\n\nusing namespace std;\n\nint main()\n{\n   std::cout << "ssHello World" << endl << \"Checker Part \tTab check\"; \n   \n   return 0;\n}`
+		code = `/* Online C++ Compiler and Editor */\n#include <iostream>\n\nusing namespace std;\n\nint main()\n{\n   std::cout << \"TEST RUN (GIVEN CODE IS EMPTY)\" << endl; \n   \n   return 0;\n}`
 	}
 
 	var cc int = 5 // amount of socket outputs varies
@@ -559,7 +619,8 @@ func WebSocketRunner(params_c map[string]any, returnValue chan []string, lsc syn
 				if len(strdd) > 0 {
 					fmt.Println("Out code(CONVERTED PROPER TO CHECK VERSION)>>")
 					fmt.Println(strdd)
-					returnValue <- []string{strdd, ""}
+					// fmt.Println(<-returnValue)
+					returnValue <- []string{strdd, "  "}
 					fmt.Println("Settled vals:")
 					return []string{}
 

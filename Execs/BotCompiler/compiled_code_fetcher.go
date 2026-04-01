@@ -71,8 +71,8 @@ func InitWebsocketClient(getLimit int, lang string, OutValue chan string, CodeTo
 	defer conn.Close()
 
 	conn.WriteMessage(1, []byte("40"))
-	//var SentArray = `42["code",{"code":"/* Online C++ Compiler and Editor */\n#include <iostream>\n\nusing namespace std;\n\nint main()\n{\n   std::cout << \"ssHello World\" << endl; \n   \n   return 0;\n}","language":"cpp","sessionId":"65fca1a2239b7"}]`
-	// var SentArray = `42["code",{"code":"using namespace std;\n #include <iostream> \n#include <string> \n#include <array>\n\n\n\ndouble AddTwoNumbers(int a, int b){\n\treturn a + b;\n\t}\n\n\ntemplate<typename T>\n\t\tvoid Printer(T PrintType){\n\t\t\tcout << std::to_string(PrintType);\n\t\t}\n\nint main(){\n\tint a = 0;\nint b = 0;\n \n\nPrinter<double>(AddTwoNumbers(a=a, b=b));\n\n\n}","language":"cpp","sessionId":"65fca1a2239b7"}]`
+	//var SentArray = `42["code",{"code":"/* Online C++ Compiler and Editor */\n#include <iostream>\n\nusing namespace std;\n\nint main()\n{\n   std::cout << \"ssHello World\" << endl; \n   \n   return 0;\n}","language":"cpp","sessionId":"65fca1a2239b7"}]` //6681a28e43abc
+	//var SentArray = `42["code",{"code":"using namespace std;\n #include <iostream> \n#include <string> \n#include <array>\n\n\n\ndouble AddTwoNumbers(int a, int b){\n\treturn a + b;\n\t}\n\n\ntemplate<typename T>\n\t\tvoid Printer(T PrintType){\n\t\t\tcout << std::to_string(PrintType);\n\t\t}\n\nint main(){\n\tint a = 0;\nint b = 0;\n \n\nPrinter<double>(AddTwoNumbers(a=a, b=b));\n\n\n}","language":"cpp","sessionId":"65fca1a2239b7"}]`
 
 	var StringCodeVal string = <-CodeToSolve
 	StringCodeVal = strings.ReplaceAll(strings.ReplaceAll(StringCodeVal, "\n", "\\n"), "\t", "\\t")
@@ -86,6 +86,7 @@ func InitWebsocketClient(getLimit int, lang string, OutValue chan string, CodeTo
 		}
 	}
 
+	//time.Sleep(time.Second)
 	var done = make(chan string)
 	//	var sett sync.WaitGroup
 	go func(OutMsg chan string) {
@@ -100,7 +101,7 @@ func InitWebsocketClient(getLimit int, lang string, OutValue chan string, CodeTo
 			}
 			queryAmount = queryAmount + 1
 			OutMsg <- string(message)
-			fmt.Println("size: %s, message: %s", mt, string(message))
+			fmt.Printf("size: %d, message: %s", mt, string(message))
 			if queryAmount >= getLimit { // process ends for one query socket when there been handled moer than 3 response
 				return
 			}
